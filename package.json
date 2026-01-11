@@ -3,11 +3,26 @@
     "version": "1.0.0",
     "description": "Plantilla profesional para proyectos HTML/CSS/JS vanilla.",
     "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview"
+        "devStart": "nodemon index.js"
     },
     "devDependencies": {
-        "vite": "^5.0.0"
+        "nodemon": "^3.1.11"
+    },
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rvgraca/chinook-analytics-dashboard.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/rvgraca/chinook-analytics-dashboard/issues"
+    },
+    "homepage": "https://github.com/rvgraca/chinook-analytics-dashboard#readme",
+    "dependencies": {
+        "ejs": "^3.1.10",
+        "express": "^5.2.1",
+        "sqlite3": "^5.1.7"
     }
 }
