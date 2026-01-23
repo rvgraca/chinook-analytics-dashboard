@@ -8,8 +8,10 @@
 /* Variables globales */
 :root {
     --color-primary: #007bff;
-    --color-bg: #f5f5f5;
-    --color-text: #222;
+    --color-bg-header: #fdfdfd; 
+
+    --color-bg: #f1f5faff;
+    --color-text: #151d1fff;
     --font-main: "Inter", sans-serif;
 }
 

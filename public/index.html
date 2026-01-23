@@ -40,13 +40,89 @@
 
 </head>
 <body>
-
+    <!-- <canvas id="myChart" style="width:100%;max-width:700px"></canvas> -->
+    <!-- <button id="load">Load top tracks</button> -->
+  <div class="app">
     <header class="header">
-        <h1>Chinook Database Dashboard using Express and SQLite3</h1>
+        <div class="title">
+            <img class="pie-chart" src="./assets/icons/pie-chart.png" alt="pie-chart">
+            <h1>Chinook Analytics Dashboard</h1>
+        </div>
+        <div class="filter-container">
+            <div class="custom-select">
+                <select>
+                    <option value="" disabled selected>Date Range</option>
+                    <option value="today">Today</option>
+                    <option value="last-7-days">Last 7 days</option>
+                </select>
+            </div>
+
+            <div class="custom-select">
+                <select>
+                    <option value="" disabled selected>Country</option>
+                    <option value="us">United States</option>
+                    <option value="es">Spain</option>
+                    <option value="ar">Argentina</option>   
+                </select>
+            </div>
+
+            <div class="custom-select">
+                <select>
+                    <option value="" disabled selected>Genre</option>
+                    <option value="rock">Rock</option>
+                    <option value="pop">Pop</option>
+                    <option value="jazz">Jazz</option>
+                </select>
+            </div>
+        </div>
     </header>
+    <aside class="sidebar">
+    <h1 class="sidebar-title">Chinook</h1>
+    <nav class="sidebar-nav">
+        <button data-view="overview" class="active">
+        <i class="fa-solid fa-table-cells-large"></i> Overview
+        </button>
+        <button data-view="sales">
+        <i class="fa-solid fa-chart-line"></i> Sales
+        </button>
+        <button data-view="music">
+        <i class="fa-solid fa-music"></i> Music
+        </button>
+        <button data-view="customers">
+        <i class="fa-solid fa-users"></i> Customers
+        </button>
+        <button data-view="geography">
+        <i class="fa-solid fa-earth-americas"></i> Geography
+        </button>
+        <button data-view="employees">
+        <i class="fa-solid fa-user-tie"></i> Employees
+        </button>
+    </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        hello
+      </header>
+
+      <section class="content">
+        <section class="view active" data-view="overview"></section>
+        <section class="view" data-view="sales"></section>
+        <section class="view" data-view="music"></section>
+        <section class="view" data-view="customers"></section>
+        <section class="view" data-view="geography"></section>
+        <section class="view" data-view="employees"></section>
+      </section>
+    </main>
+
+  </div>
+
 
 
     <!-- MAIN JS -->
     <script type="module" src="./js/main.js"></script>
+    
+    <!-- CHART JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 </body>
 </html>

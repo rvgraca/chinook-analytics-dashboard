@@ -1,8 +1,190 @@
-header {
-    padding: 1.5rem;
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 10px;
+}
+
+
+.app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 80px 1fr;
+  height: 100vh;
+}
+
+
+
+.header {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 1;
+    background-color: var(--color-bg-header);
+    color: var(--color-text);
+    border-bottom: 3px #e3e3e3 solid;
+    
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+}
+
+.title {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.pie-chart {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    margin-left: 20px;
+}
+
+
+.filter-container {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  
+}
+
+.custom-select {
+  position: relative;
+  display: inline-block;
+}
+
+.custom-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--color-bg-header);
+  color: var(--color-text);
+
+  border: 1px solid #d1d5db; 
+  border-radius: 10px;        
+  padding: 10px 40px 10px 16px; 
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 140px;
+}
+
+.custom-select select:hover {
+  border-color: #9ca3af;
+}
+
+
+.custom-select select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.custom-select::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 6px;
+  /* SVG de una flecha simple hacia abajo */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 10 6' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 1 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none; /* Permite que el click pase al select */
+}
+
+
+/* ---------------SIDEBAR -------------------------*/
+
+
+.sidebar {
+    grid-column: 1 / span 1;
+    grid-row: 2 / span 1;
+    background-color: var(--color-bg-header); 
+    border-right: 1px solid #e3e3e3;
+    padding: 20px 15px;
+}
+
+.sidebar-title {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    padding-left: 12px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; 
+}
+
+.sidebar-nav button {
+    display: flex;
+    align-items: center;
+    gap: 15px; 
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    color: #666; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+
+.sidebar-nav button i {
+    font-size: 1.2rem;
+    width: 24px; 
     text-align: center;
 }
 
-#app {
-    padding: 2rem;
+.sidebar-nav button:hover {
+    background-color: #f8fafc;
+    color: #333;
 }
+
+
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+
+
+.sidebar-nav button.active {
+    background-color: #e8effd; 
+    color: #2b6cb0;           
+    font-weight: 500;
+}
+
+.sidebar-nav button.active i {
+    color: #2b6cb0;         
+}
+
+
+.main {
+    display: flex;
+    flex-direction: column;
+
+    
+    grid-column: 2  / span 1;
+    grid-row: 2 / span 1;
+    background-color: var(--color-bg);
+}
+
+.content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+

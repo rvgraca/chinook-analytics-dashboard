@@ -3,18 +3,6 @@ const path = require("path");
 const app = express();
 const PORT = 4000;
 
-
-const sqlite3 = require("sqlite3").verbose();
-
-// const db = new sqlite3.Database("./students.db", (err) => {
-//   if (err) {
-//     console.error("Error al conectar DB", err.message);
-//   } else {
-//     console.log("Base de datos conectada");
-//   }
-// });
-
-
 //Allow parsing json files
 app.use(express.json());
 
@@ -22,12 +10,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 //Set the view engine to ejs
-app.set("view engine", "ejs");
+// app.set("view engine", "ejs");
 
 
-//Creating a router to "students"
-// const studentRouter = require("./routes/students");
-// app.use("/students", studentRouter); 
+//Creating a router to "analytics"
+const analyticsRouter = require("./routes/analytics");
+app.use("/api/analytics", analyticsRouter); 
 
 
 //Listen to the port 4000
@@ -35,8 +23,5 @@ app.listen(PORT, () => {
     console.log("Servidor corriendo en puerto", PORT);
 });
 
-app.get("/", (req, res) => { 
-    res.send("Servidor funcionando"); 
-});
 
 
