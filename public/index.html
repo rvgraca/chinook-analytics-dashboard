@@ -37,6 +37,8 @@
     <link rel="stylesheet" href="/styles/globals.css" />
     <link rel="stylesheet" href="/css/main.css" />
 
+    <link rel="icon" type="image/x-icon" href="./assets/icons/pie-chart.png">
+
 
 </head>
 <body>
@@ -44,37 +46,15 @@
     <header class="header">
         <div class="title">
             <img class="pie-chart" src="./assets/icons/pie-chart.png" alt="pie-chart">
-            <h1>Chinook Analytics Dashboard</h1>
+            <h1 id="chinookTitle">Chinook Analytics Dashboard</h1>
         </div>
-        <div class="filter-container">
-            <div class="custom-select">
-                <select>
-                    <option value="" disabled selected>Date Range</option>
-                    <option value="today">Today</option>
-                    <option value="last-7-days">Last 7 days</option>
-                </select>
-            </div>
-
-            <div class="custom-select">
-                <select>
-                    <option value="" disabled selected>Country</option>
-                    <option value="us">United States</option>
-                    <option value="es">Spain</option>
-                    <option value="ar">Argentina</option>   
-                </select>
-            </div>
-
-            <div class="custom-select">
-                <select>
-                    <option value="" disabled selected>Genre</option>
-                    <option value="rock">Rock</option>
-                    <option value="pop">Pop</option>
-                    <option value="jazz">Jazz</option>
-                </select>
-            </div>
-        </div>
+        <button class="menu-btn" aria-controls="sidebar" aria-expanded="false">
+            <span class="icon icon-open"><i class="fa-solid fa-bars"></i></span>
+            <span class="icon icon-close" aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
+        </button>
     </header>
-    <aside class="sidebar">
+
+    <aside class="sidebar" id="sidebar">
     <h1 class="sidebar-title">Chinook</h1>
     <nav class="sidebar-nav">
         <button data-view="overview" class="active">
@@ -97,10 +77,10 @@
         </button>
     </nav>
     </aside>
+    <div class="backdrop" hidden></div>
 
     <main class="main">
       <header class="topbar">
-        hello
       </header>
 
       <section class="content">

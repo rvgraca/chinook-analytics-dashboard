@@ -1,30 +1,26 @@
 import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData} from './modules/utils.js'
 
-/*
+const menuBtn = document.querySelector(".menu-btn");
+const sideBar = document.querySelector(".sidebar");
+const iconOpen = document.querySelector(".icon-open");
+const iconClose = document.querySelector(".icon-close");
+const backdrop = document.querySelector(".backdrop");
 
-{
-  "totalRevenue": 24738.93,
-  "totalInvoices": 1430,
-  "uniqueCustomers": 305,
-  "tracksSold": 12208,
+menuBtn.addEventListener("click", toggleMenu);
 
-  "revenueOverTime": [
-    { "date": "2014-01", "value": 520.30 },
-    { "date": "2014-02", "value": 610.20 }
-  ],
+function toggleMenu() {
+  sideBar.classList.toggle("show-menu");
 
-  "revenueByGenre": [
-    { "genre": "Rock", "value": 8350.40 },
-    { "genre": "Jazz", "value": 4200.10 }
-  ],
-
-  "topArtistsByRevenue": [
-    { "artist": "Iron Maiden", "value": 13850.22 }
-  ]
+  const open = sideBar.classList.contains("show-menu");
+  iconOpen.style.display = open ? "none" : "inline-block";
+  iconClose.style.display = open ? "inline-block" : "none";
+  menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
 }
 
+backdrop.addEventListener("click", () => {
+  if (sideBar.classList.contains("show-menu")) toggleMenu();
+}); 
 
-*/
 
 
 const buttons = document.querySelectorAll('.sidebar-nav button');
@@ -257,6 +253,11 @@ function renderRevenueOverTime(data) {
                         ticks: {
                             callback: v => formatCurrency(v)
                         }
+                    },
+                    x: {
+                        ticks: {
+                            maxTicksLimit: 3,
+                        }
                     }
                 }
             }
@@ -270,7 +271,7 @@ function renderRevenueByGenre(data) {
     let genres = [];
     let revenueByGenreList = [];
 
-    const N_GENRES = 10;
+    const N_GENRES = 5;
 
     Object.values(data.revenueByGenre.slice(0, N_GENRES)).forEach(row => {
         genres.push(row.genre);
@@ -280,7 +281,7 @@ function renderRevenueByGenre(data) {
     graphLoadingState.revenueByGenre = new Chart(
         document.getElementById("revenueByGenre"),
         {
-            type: "pie",
+            type: "bar",
             data: {
                 labels: genres,
                 datasets: [{
@@ -345,9 +346,15 @@ function renderLastYearRevenue(data) {
                 scales: {
                     y: {
                         ticks: {
-                            callback: v => formatCurrency(v)
+                            callback: v => formatCurrency(v),
+                            maxTicksLimit: 2,
                         }
-                    }
+                    },
+                    x: {
+                        ticks: {
+                            maxTicksLimit: 6,
+                        }
+                    },
                 }
             }
         }
