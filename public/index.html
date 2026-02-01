@@ -40,8 +40,6 @@
 
 </head>
 <body>
-    <!-- <canvas id="myChart" style="width:100%;max-width:700px"></canvas> -->
-    <!-- <button id="load">Load top tracks</button> -->
   <div class="app">
     <header class="header">
         <div class="title">
@@ -106,7 +104,59 @@
       </header>
 
       <section class="content">
-        <section class="view active" data-view="overview"></section>
+        <section class="active view" data-view="overview">
+
+            <div class="metrics">
+                <div class="metric-card">
+                    <p>Total Revenue</p>
+                    <h2 id="totalRevenue">—</h2>
+                </div>
+
+                <div class="metric-card">
+                    <p>Total Invoices</p>
+                    <h2 id="totalInvoices">—</h2>
+                </div>
+
+                <div class="metric-card">
+                    <p>Unique Customers</p>
+                    <h2 id="uniqueCustomers">—</h2>
+                </div>
+
+                <div class="metric-card">
+                    <p>Tracks Sold</p>
+                    <h2 id="tracksSold">—</h2>
+                </div>
+            </div>
+            <div class="charts">
+                <div class="chart-card">
+                    <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
+                        <canvas id="revenueOverTime"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <h3>Revenue By Genre</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="revenueByGenre"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Last Year Revenue</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="lastYearRevenue"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Top Artists</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="topArtistsByRevenue"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="view" data-view="sales"></section>
         <section class="view" data-view="music"></section>
         <section class="view" data-view="customers"></section>

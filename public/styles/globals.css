@@ -15,8 +15,9 @@
     --font-main: "Inter", sans-serif;
 }
 
-body {
+html, body {
     font-family: var(--font-main);
     background: var(--color-bg);
     color: var(--color-text);
+    height: 100%;
 }

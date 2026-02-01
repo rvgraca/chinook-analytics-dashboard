@@ -2,44 +2,191 @@ const express = require("express");
 const router = express.Router();
 const db = require("../database/db");
 
+// ---------------------------- /SQL QUERIES/ ---------------------------- 
+
+const overviewSQL = `
+SELECT
+    SUM(ii.Quantity * ii.UnitPrice) AS totalRevenue,
+    COUNT(DISTINCT ii.InvoiceId) AS totalInvoices,
+    COUNT(DISTINCT i.CustomerId) AS uniqueCustomers,
+    SUM(ii.Quantity) AS tracksSold
+FROM invoice_items ii
+JOIN invoices i
+    ON ii.InvoiceId = i.InvoiceId;
+`;
+
+const revenueByGenreSQL = `
+SELECT
+    gen.Name AS genre,
+    SUM(ii.Quantity * ii.UnitPrice) AS revenue
+FROM genres gen
+JOIN tracks tr
+    ON tr.GenreId = gen.GenreId
+JOIN invoice_items ii
+    ON ii.TrackId = tr.TrackId
+GROUP BY gen.GenreId, gen.Name
+ORDER BY revenue DESC;
+`;
+
+const revenueOverTimeSQL = `
+SELECT
+    DATE(inv.InvoiceDate) AS date,
+    SUM(ii.Quantity * ii.UnitPrice) AS totalRevenue
+FROM invoice_items ii
+JOIN invoices inv
+    ON ii.InvoiceId = inv.InvoiceId
+GROUP BY DATE(inv.InvoiceDate)
+ORDER BY DATE(inv.InvoiceDate);
+`;
+
+const topArtistsByRevenueSQL  = `
+SELECT
+    ar.Name AS artist,
+    ROUND(SUM(ii.Quantity * ii.UnitPrice), 2) AS revenue
+FROM invoice_items ii
+JOIN tracks tr   ON ii.TrackId = tr.TrackId
+JOIN albums al   ON tr.AlbumId = al.AlbumId
+JOIN artists ar  ON al.ArtistId = ar.ArtistId
+GROUP BY ar.ArtistId, ar.Name
+ORDER BY revenue DESC;
+
+
+`;
+
+
+
+// ---------------------------- /SQL QUERIES/ ----------------------------
+
+
+
+
 /*
 ROUTES
-
-GET /api/analytics/top-tracks
-GET /api/analytics/sales-by-country
-GET /api/analytics/top-artists
+GET api/analytics/overview
+GET api/analytics/sales
+GET api/analytics/music
+GET api/analytics/customers
+GET api/analytics/geography
+GET api/analytics/employees
 
 */
 
 
-router 
-    .route("/top-tracks")
-    .get((req, res) => {
-        // const sql = `SELECT t.name, SUM(ii.Quantity) AS sales
-        // FROM tracks t
-        // JOIN invoice_items ii ON t.TrackId = ii.TrackId
-        // GROUP BY t.TrackId
-        // ORDER BY sales DESC
-        // LIMIT 10
-        // `;
+const dbGet = (sql, params = []) =>
+    new Promise((resolve, reject) => {
+    db.get(sql, params, (err, row) =>
+        err ? reject(err) : resolve(row)
+    );
+});
 
-        const sql = `
-        SELECT al.title AS 'Album Title', tr.Name AS 'Track Name', gen.Name AS 'Genre Name', ii.Quantity, ii.UnitPrice  
-        FROM albums al
-        JOIN tracks tr       ON tr.AlbumId = al.AlbumId
-        JOIN genres gen      ON gen.GenreId = tr.GenreId
-        JOIN invoice_items ii ON ii.TrackId = tr.TrackId
-        GROUP BY tr.Name
-        LIMIT 50;
-        `;
+const dbAll = (sql, params = []) =>
+    new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) =>
+        err ? reject(err) : resolve(rows)
+    );
+});
 
-        db.all(sql, [], (err, rows) => {
-            if (err) {
-                return res.status(500).json({ error: err.message});
-            }
-            res.json(rows);
-        });
-    })
+
+router.get("/overview", async (req, res) => {
+  try {
+    const overview = await dbGet(overviewSQL);
+    const revenueByGenre = await dbAll(revenueByGenreSQL);
+    const revenueOverTime = await dbAll(revenueOverTimeSQL);
+    const topArtistsByRevenue = await dbAll(topArtistsByRevenueSQL);
+
+    res.json({
+      ...overview,
+      revenueByGenre,
+      revenueOverTime,
+      topArtistsByRevenue,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.get("/sales", (req, res) => {
+    const sql = `
+        SELECT SUM(UnitPrice * Quantity) AS totalSales
+        FROM invoice_items; 
+    `;
+
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+router.get("/music", (req, res) => {
+    const sql = `
+        SELECT SUM(UnitPrice * Quantity) AS totalSales
+        FROM invoice_items; 
+    `;
+
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+router.get("/customers", (req, res) => {
+    const sql = `
+        SELECT SUM(UnitPrice * Quantity) AS totalSales
+        FROM invoice_items; 
+    `;
+
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+router.get("/customers", (req, res) => {
+    const sql = `
+        SELECT SUM(UnitPrice * Quantity) AS totalSales
+        FROM invoice_items; 
+    `;
+
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+router.get("/geography", (req, res) => {
+    const sql = `
+        SELECT SUM(UnitPrice * Quantity) AS totalSales
+        FROM invoice_items; 
+    `;
+
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+router.get("/employees", (req, res) => {
+    const sql = `
+        SELECT SUM(UnitPrice * Quantity) AS totalSales
+        FROM invoice_items; 
+    `;
+
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(row);
+    });
+});
+
+
+
 
 
 

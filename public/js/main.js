@@ -1,16 +1,40 @@
-// import { createElement } from "./modules/dom.js";
-// import { log } from "./modules/utils.js";
+import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData} from './modules/utils.js'
 
-const loadBtn = document.getElementById("load");
-const tbody = document.getElementById("table");
-const primaryTable = document.getElementById("primaryTable");
+/*
+
+{
+  "totalRevenue": 24738.93,
+  "totalInvoices": 1430,
+  "uniqueCustomers": 305,
+  "tracksSold": 12208,
+
+  "revenueOverTime": [
+    { "date": "2014-01", "value": 520.30 },
+    { "date": "2014-02", "value": 610.20 }
+  ],
+
+  "revenueByGenre": [
+    { "genre": "Rock", "value": 8350.40 },
+    { "genre": "Jazz", "value": 4200.10 }
+  ],
+
+  "topArtistsByRevenue": [
+    { "artist": "Iron Maiden", "value": 13850.22 }
+  ]
+}
+
+
+*/
+
 
 const buttons = document.querySelectorAll('.sidebar-nav button');
 const views = document.querySelectorAll('.view');
-
-
 const topBar = document.querySelector('.topbar');
 
+
+document.addEventListener("DOMContentLoaded", () => {
+    setView("overview");
+});
 
 
 buttons.forEach(btn => {
@@ -49,132 +73,373 @@ function setView(view) {
     }
 }
 
+const viewLoadingState = {
+  sales: null,
+  overview: null,
+  music: null,
+  customers: null,
+  geography: null,
+  employees: null,
+};
+
+const graphLoadingState = {
+    revenueOverTime: null,
+    revenueByGenre: null,
+    lastYearRevenue: null,
+    topArtists: null,
+};
 
 
-const loaded = {};
+// -------------------------------------LOADING VIEWS-------------------------------------
 
-function loadSales() {
-    if (loaded.sales) return;
-    loaded.sales = true;
-    topBar.innerHTML = "<h1>Sales</h1>";
-//   const res = await fetch("/api/analytics/sales");
-//   const data = await res.json();
-
-//   renderSalesCharts(data);
-}
-
-function loadOverview() {
-    if (loaded.overview) return;
-    loaded.overview = true;    
+async function loadOverview() {
+    //
     topBar.innerHTML = "<h1>Overview</h1>";
-
+    //
+    const data = await fetchOverview();
+    renderOverview(data);
 }
-
-function loadMusic() {
-    if (loaded.music) return;
-    loaded.music = true;    
+async function loadSales() {
+    //
+    topBar.innerHTML = "<h1>Sales</h1>";
+    //
+    const data = await fetchSales();
+    renderSales(data);
+}
+async function loadMusic() {
+    //
     topBar.innerHTML = "<h1>Music</h1>";
+    //
+    const data = await fetchMusic();
+    renderMusic(data);
 }
-
-function loadCustomers() {
-    if (loaded.customers) return;
-    loaded.customers = true;    
+async function loadCustomers() {
+    //
     topBar.innerHTML = "<h1>Customers</h1>";
+    //
+    const data = await fetchCustomers();
+    renderCustomers(data);
 }
-
-function loadGeography() {
-    if (loaded.geography) return;
-    loaded.geography = true;    
+async function loadGeography() {
+    //
     topBar.innerHTML = "<h1>Geography</h1>";
+    //
+    const data = await fetchGeography();
+    renderGeography(data);
 }
-
-function loadEmployees() {
-    if (loaded.employees) return;
-    loaded.employees = true;    
+async function loadEmployees() {
+    //
     topBar.innerHTML = "<h1>Employees</h1>";
+    //
+    const data = await fetchEmployees();
+    renderEmployees(data);
 }
 
 
 
-
-
-// const xValues = ["Italy", "France", "Spain", "USA", "Argentina"];
-// const yValues = [55, 49, 44, 24, 15];
-// const barColors = ["red", "green", "blue", "orange", "brown"];
-// new Chart("myChart", {
-//    type: "bar", //THIS CAN BE "pie" as well
-//    data: {
-//        labels: xValues,
-//        datasets: [{
-//            backgroundColor: barColors,
-//            data: yValues
-//        }]
-//    },
-//    options: {
-//        title: {
-//            display: true,
-//            text: "World Wide Wine Production"
-//        }
-//    }
-// });
-
-
-
-
-
-function createTable(JSONdata) {
-    if (!JSONdata.length) return "<p>No data</p>";
-
-    let innerHTMLTable = "";
-    innerHTMLTable += "<thead>";
-    
-    Object.keys(JSONdata[0]).forEach(key => {
-        innerHTMLTable += `\n   <th>${key}</th>`;});
-    innerHTMLTable += "\n</thead";
-    innerHTMLTable += "<tbody>";
-
-    for (const row of JSONdata) {
-        innerHTMLTable += `\n    <tr>`;
-        Object.values(row).forEach(column => {
-            innerHTMLTable += `\n       <td>${column}</td>`;
-        });
-        innerHTMLTable += `\n    </tr>`;
+// -------------------------------------FETCHES-------------------------------------
+async function fetchOverview() {
+    if (!viewLoadingState.overview) {
+        console.log("cargando overview");
+        const res = await fetch("/api/analytics/overview");
+        const data = await res.json();
+        viewLoadingState.overview = data;
     }
-    innerHTMLTable += "</tbody>";
-    
-    return innerHTMLTable;
+    return viewLoadingState.overview;
+}
+
+async function fetchSales() {
+    if (!viewLoadingState.sales) {
+        console.log("cargando sales");
+        const res = await fetch("/api/analytics/sales");
+        const data = await res.json();
+        viewLoadingState.sales = data;
+    }
+    return viewLoadingState.sales;
+}
+async function fetchMusic() {
+    if (!viewLoadingState.music) {
+        console.log("cargando music");
+        const res = await fetch("/api/analytics/music");
+        const data = await res.json();
+        viewLoadingState.music = data;
+    }
+    return viewLoadingState.music;
+}
+async function fetchCustomers() {
+    if (!viewLoadingState.customers) {
+        console.log("cargando customers");
+        const res = await fetch("/api/analytics/customers");
+        const data = await res.json();
+        viewLoadingState.customers = data;
+    }
+    return viewLoadingState.customers;
+}
+async function fetchGeography() {
+    if (!viewLoadingState.geography) {
+        console.log("cargando geography");
+        const res = await fetch("/api/analytics/geography");
+        const data = await res.json();
+        viewLoadingState.geography = data;
+    }
+    return viewLoadingState.geography;
+}
+async function fetchEmployees() {
+    if (!viewLoadingState.employees) {
+        console.log("cargando employees");
+        const res = await fetch("/api/analytics/employees");
+        const data = await res.json();
+        viewLoadingState.employees = data;
+    }
+    return viewLoadingState.employees;
+}
+
+// -------------------------------------RENDERING-------------------------------------
+
+// -------------------------------------RENDER OVERVIEW-------------------------------------
+function renderOverview(data) {
+    console.log(data);
+    const view = document.querySelector('.view[data-view="overview"]');
+    renderOverviewMetrics(data);
+    renderRevenueOverTime(data);
+    renderRevenueByGenre(data);
+    renderLastYearRevenue(data);
+    renderTopArtists(data);
+
 }
 
 
-// loadBtn.addEventListener("click", () => {
-//   fetch("/api/analytics/top-tracks")
-//     .then(res => res.json())
-//     .then(data => {      
-//     createTable(data);
-//       tbody.innerHTML = "";
-//       data.forEach(row => {
-//         tbody.innerHTML += `
-//           <tr>
-//             <td>${row.Name}</td>
-//             <td>${row.sales}</td>
-//           </tr>
-//         `;
-//       });
-//     });
-// });
-loadBtn.addEventListener("click", () => {
-  fetch("/api/analytics/top-tracks")        
-    .then(res => res.json())
-    .then(data => {      
-        primaryTable.innerHTML = createTable(data);
+function renderOverviewMetrics(data) {
+    document.getElementById("totalRevenue").innerHTML = `${formatCurrency(data.totalRevenue)}`;
+    document.getElementById("totalInvoices").innerHTML = `${formatNumber(data.totalInvoices)}`;
+    document.getElementById("uniqueCustomers").innerHTML = `${formatNumber(data.uniqueCustomers)}`;
+    document.getElementById("tracksSold").innerHTML = `${formatNumber(data.tracksSold)}`;
+}
+
+function renderRevenueOverTime(data) {
+    if (graphLoadingState.revenueOverTime) return;
+
+    const sampled = downsample(data.revenueOverTime, 7); // 1 punto por semana
+
+    const dates = [];
+    const totalRevenueList = [];
+
+    for (const row of sampled) {
+        dates.push(row.date);
+        totalRevenueList.push(row.totalRevenue);
+    }
+
+    graphLoadingState.revenueOverTime = new Chart(
+        document.getElementById("revenueOverTime"),
+        {
+            type: "line",
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: "Revenue Over Time",
+                    data: totalRevenueList,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    backgroundColor: "#3b82f6",
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Revenue Over Time"
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: v => formatCurrency(v)
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
+
+function renderRevenueByGenre(data) {
+    if (graphLoadingState.revenueByGenre) return;
+
+    let genres = [];
+    let revenueByGenreList = [];
+
+    const N_GENRES = 10;
+
+    Object.values(data.revenueByGenre.slice(0, N_GENRES)).forEach(row => {
+        genres.push(row.genre);
+        revenueByGenreList.push(row.revenue);
     });
-});
 
+    graphLoadingState.revenueByGenre = new Chart(
+        document.getElementById("revenueByGenre"),
+        {
+            type: "pie",
+            data: {
+                labels: genres,
+                datasets: [{
+                    label: "Revenue By Genre",
+                    data: revenueByGenreList,
+                    backgroundColor: generateColors(genres.length),
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Revenue by Genre"
+                    },
+                    legend: {
+                        display: false,
+                    }
+                }
+            }
+        }
+    );
+}
 
+function renderLastYearRevenue(data) {
+    if (graphLoadingState.lastYearRevenue) return;
 
+    const lastYearData = getLastYearData(data.revenueOverTime);
+    const sampled = downsample(lastYearData, 7); //weekly
 
+    const dates = [];
+    const totalRevenueList = [];
 
+    for (const row of sampled) {
+        dates.push(row.date);
+        totalRevenueList.push(row.totalRevenue);
+    }
 
+    graphLoadingState.lastYearRevenue = new Chart(
+        document.getElementById("lastYearRevenue"),
+        {
+            type: "bar",
+            data: {
+                labels: dates.slice(0,12),
+                datasets: [{
+                    label: "Last Year Revenue",
+                    data: totalRevenueList.slice(0,12),
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    backgroundColor: "#3b82f6",
+                }]
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Last Year Revenue"
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: v => formatCurrency(v)
+                        }
+                    }
+                }
+            }
+        }
+    );
+}
 
+function renderTopArtists(data) {
+    if (graphLoadingState.topArtists) return;
 
+    let artists = [];
+    let topArtistsByRevenue = [];
 
+    const N_ARTISTS = 10;
+    Object.values(data.topArtistsByRevenue.slice(0, N_ARTISTS)).forEach(row => {
+        artists.push(row.artist);
+        topArtistsByRevenue.push(row.revenue);
+    });
+
+    graphLoadingState.topArtists = new Chart(
+        document.getElementById("topArtistsByRevenue"),
+        {
+            type: "bar",
+            data: {
+                labels: artists,
+                datasets: [{
+                    label: "Top Artists",
+                    data: topArtistsByRevenue,
+                    backgroundColor: generateColors(artists.length),
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Revenue by Artist"
+                    },
+                    legend: {
+                        display: false,
+                    }
+                }
+            }
+        }
+    );
+}
+
+// -------------------------------------RENDER SALES-------------------------------------
+function renderSales(data) {
+    console.log(data);
+    const view = document.querySelector('.view[data-view="sales"]');
+
+    view.innerHTML = `
+        <div class="metric">
+        <h2>Total Sales</h2>
+        <p>$${data.totalSales.toFixed(2)}</p>
+        </div>
+    `;
+}
+
+// -------------------------------------RENDER MUSIC-------------------------------------
+
+function renderMusic(data) {
+    console.log(data);
+    const view = document.querySelector('.view[data-view="music"]');
+    view.innerHTML = `
+        HOLA, ESTO ES music
+    `;
+}
+
+// -------------------------------------RENDER CUSTOMERS-------------------------------------
+function renderCustomers(data) {
+    console.log(data);
+    const view = document.querySelector('.view[data-view="customers"]');
+    view.innerHTML = `
+        HOLA, ESTO ES customers
+    `;
+}
+
+// -------------------------------------RENDER GEOGRAPHY-------------------------------------
+function renderGeography(data) {
+    console.log(data);
+    const view = document.querySelector('.view[data-view="geography"]');
+    view.innerHTML = `
+        HOLA, ESTO ES geography
+    `;
+}
+
+// -------------------------------------RENDER EMPLOYEES-------------------------------------
+function renderEmployees(data) {
+    console.log(data);
+    const view = document.querySelector('.view[data-view="employees"]');
+    view.innerHTML = `
+        HOLA, ESTO ES employees
+    `;
+}
