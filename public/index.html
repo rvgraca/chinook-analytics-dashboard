@@ -84,7 +84,7 @@
       </header>
 
       <section class="content">
-        <section class="active view" data-view="overview">
+        <section class="active view cq-enabled" data-view="overview">
 
             <div class="metrics">
                 <div class="metric-card">
@@ -110,7 +110,7 @@
             <div class="charts">
                 <div class="chart-card">
                     <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
-                        <canvas id="revenueOverTime"></canvas>
+                        <canvas id="overview_revenueOverTime"></canvas>
                     </div>
                 </div>
                 
@@ -137,7 +137,67 @@
             </div>
         </section>
 
-        <section class="view" data-view="sales"></section>
+        <section class="view cq-enabled" data-view="sales">
+
+            <div class="metrics">
+                <div class="metric-card">                    
+                    <p>
+                        <i class="fa-solid fa-cart-shopping"></i> 
+                        Total sales
+                    </p>
+                    <h2 id="totalSales">—</h2>
+                </div>
+
+                <div class="metric-card">
+                    <p>
+                        <i class="fa-regular fa-calendar"></i>
+                        Total Invoices
+                    </p>
+                    <h2 id="totalSalesInvoices">—</h2>
+                </div>
+
+                <div class="metric-card">
+                    <p>
+                        <i class="fa-solid fa-music"></i>
+                        Total tracks sold
+                    </p>
+                    <h2 id="tracksSalesSold">—</h2>
+                </div>
+
+                <div class="metric-card">
+                    <p>
+                        <i class="fa-solid fa-magnifying-glass-dollar"></i>
+                        Average Order Price
+                    </p>
+                    <h2 id="averageOrderPrice">—</h2>
+                </div>
+            </div>
+            <div class="charts">
+                <div class="chart-card">
+                    <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
+                        <canvas id="sales_revenueOverTime"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <h3>Revenue By Country</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="revenueByCountry"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Top Tracks</h3>
+                    <div class="tablesStyle" id="topTracksTable"></div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Top Artists</h3>
+                    <div class="tablesStyle" id="topCustomersTable"></div>
+                </div>
+            </div>
+        </section>
+
         <section class="view" data-view="music"></section>
         <section class="view" data-view="customers"></section>
         <section class="view" data-view="geography"></section>

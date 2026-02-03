@@ -1,4 +1,4 @@
-import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData} from './modules/utils.js'
+import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData, escapeHtml} from './modules/utils.js'
 
 const menuBtn = document.querySelector(".menu-btn");
 const sideBar = document.querySelector(".sidebar");
@@ -79,10 +79,14 @@ const viewLoadingState = {
 };
 
 const graphLoadingState = {
-    revenueOverTime: null,
+    //overview
+    overview_revenueOverTime: null,
     revenueByGenre: null,
     lastYearRevenue: null,
     topArtists: null,
+    //sales
+    sales_revenueOverTime: null,
+    revenueByCountry: null,
 };
 
 
@@ -195,15 +199,14 @@ async function fetchEmployees() {
 // -------------------------------------RENDER OVERVIEW-------------------------------------
 function renderOverview(data) {
     console.log(data);
-    const view = document.querySelector('.view[data-view="overview"]');
+    // const view = document.querySelector('.view[data-view="overview"]');
     renderOverviewMetrics(data);
-    renderRevenueOverTime(data);
+    renderRevenueOverTime(data, "overview_revenueOverTime", "overview_revenueOverTime");
     renderRevenueByGenre(data);
     renderLastYearRevenue(data);
     renderTopArtists(data);
 
 }
-
 
 function renderOverviewMetrics(data) {
     document.getElementById("totalRevenue").innerHTML = `${formatCurrency(data.totalRevenue)}`;
@@ -212,21 +215,24 @@ function renderOverviewMetrics(data) {
     document.getElementById("tracksSold").innerHTML = `${formatNumber(data.tracksSold)}`;
 }
 
-function renderRevenueOverTime(data) {
-    if (graphLoadingState.revenueOverTime) return;
+function renderRevenueOverTime(data, canvasId = "revenueOverTime", stateKey = "revenueOverTime") {
 
-    const sampled = downsample(data.revenueOverTime, 7); // 1 punto por semana
+    if (graphLoadingState[stateKey]) return;
+
+    const sampled = downsample(data.revenueOverTime, 7);
 
     const dates = [];
     const totalRevenueList = [];
-
     for (const row of sampled) {
         dates.push(row.date);
         totalRevenueList.push(row.totalRevenue);
     }
 
-    graphLoadingState.revenueOverTime = new Chart(
-        document.getElementById("revenueOverTime"),
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return; // evita crash silencioso
+    
+    graphLoadingState[stateKey] = new Chart(
+        ctx,
         {
             type: "line",
             data: {
@@ -281,7 +287,7 @@ function renderRevenueByGenre(data) {
     graphLoadingState.revenueByGenre = new Chart(
         document.getElementById("revenueByGenre"),
         {
-            type: "bar",
+            type: "pie",
             data: {
                 labels: genres,
                 datasets: [{
@@ -292,14 +298,13 @@ function renderRevenueByGenre(data) {
             },
             options: {
                 indexAxis: "y",
-                plugins: {
-                    title: {
-                        display: true,
-                        text: "Revenue by Genre"
-                    },
-                    legend: {
-                        display: false,
-                    }
+                title: {
+                    display: true,
+                    text: "Revenue by Genre"
+                },
+                legend: {
+                    display: true,
+                    position:"right",
                 }
             }
         }
@@ -403,16 +408,181 @@ function renderTopArtists(data) {
 
 // -------------------------------------RENDER SALES-------------------------------------
 function renderSales(data) {
-    console.log(data);
+
     const view = document.querySelector('.view[data-view="sales"]');
 
-    view.innerHTML = `
-        <div class="metric">
-        <h2>Total Sales</h2>
-        <p>$${data.totalSales.toFixed(2)}</p>
-        </div>
+    renderSalesMetric(data);
+    renderRevenueOverTime(data, "sales_revenueOverTime", "sales_revenueOverTime");
+    renderRevenueByCountry(data);
+    renderTopTracksTable(data);
+    renderTopCustomers(data);
+}
+
+function renderSalesMetric(data) {
+    document.getElementById("totalSales").innerHTML = `${formatCurrency(data.totalRevenue)}`;
+    document.getElementById("totalSalesInvoices").innerHTML = `${formatNumber(data.totalInvoices)}`;
+    document.getElementById("tracksSalesSold").innerHTML = `${formatNumber(data.tracksSold)}`;
+    document.getElementById("averageOrderPrice").innerHTML = `${formatCurrency(data.averageOrderPrice)}`;
+}
+
+function renderRevenueByCountry(data) {
+    if (graphLoadingState.revenueByCountry) return;
+
+    let countries = [];
+    let revenueByCountryList = [];
+
+    const N_COUNTRIES = 5;
+
+    Object.values(data.revenueByCountry.slice(0, N_COUNTRIES)).forEach(row => {
+        countries.push(row.BillingCountry);
+        revenueByCountryList.push(row.revenueByCountry);
+    });
+
+    const ctx = document.getElementById("revenueByCountry");
+    if (!ctx) return; // evita crash silencioso
+    
+    graphLoadingState.revenueByCountry = new Chart(
+        ctx,
+        {
+            type: "pie",
+            data: {
+                labels: countries,
+                datasets: [{
+                    label: "Revenue By Country",
+                    data: revenueByCountryList,
+                    backgroundColor: generateColors(countries.length),
+                }]
+            },
+            options: {
+                // indexAxis: "y",
+                title: {
+                    display: true,
+                    text: "Revenue by Country"
+                },
+                legend: {   
+                    display: true,
+                    position:"right",
+                    align: "center",
+
+                }
+            }
+        }
+    );
+}
+
+function renderTopTracksTable(data) {
+    console.log(data);
+    const N_TRACKS = 5;
+    const rows = data.topTracksByRevenue.slice(0, N_TRACKS);
+
+
+    const el = document.getElementById("topTracksTable");
+    if (!el) return;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        el.innerHTML = "<p style='color:#6b7280;margin:0'>No data</p>";
+        return;
+    }
+
+    const max = Math.max(...rows.map(r => Number(r.revenue) || 0)) || 1;
+
+    el.innerHTML = `
+        <table class="top-tracks-table">
+        <thead>
+            <tr>
+            <th class="rank-cell">#</th>
+            <th>Track</th>
+            <th class="sales-cell" style="text-align:right">Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map((r, i) => {
+            const revenue = Number(r.revenue) || 0;
+            const pct = (revenue / max) * 100;
+
+            return `
+                <tr>
+                <td class="rank-cell">${i + 1}</td>
+                <td>
+                    <span class="track-title">${escapeHtml(r.track)}</span>
+                    <span class="track-artist">${escapeHtml(r.artist)}</span>
+                </td>
+                <td class="sales-cell">
+                    <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end;">
+                    <div class="progress" style="flex:1; max-width:160px;">
+                        <div style="width:${pct.toFixed(1)}%"></div>
+                    </div>
+                    <div style="min-width:60px; text-align:right;">
+                        ${formatCurrency(revenue)}
+                    </div>
+                    </div>
+                </td>
+                </tr>
+            `;
+            }).join("")}
+        </tbody>
+        </table>
     `;
 }
+
+
+function renderTopCustomers(data) {
+    console.log(data);
+    const N_PEOPLE = 5;
+    const rows = data.topCustomers.slice(0, N_PEOPLE);
+
+
+    const el = document.getElementById("topCustomersTable");
+    if (!el) return;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        el.innerHTML = "<p style='color:#6b7280;margin:0'>No data</p>";
+        return;
+    }
+
+    const max = Math.max(...rows.map(r => Number(r.revenue) || 0)) || 1;
+
+    el.innerHTML = `
+        <table class="top-tracks-table">
+            <thead>
+                <tr>
+                <th class="rank-cell">#</th>
+                <th>Name</th>
+                <th class="sales-cell" style="text-align:right">Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map((r, i) => {
+                const revenue = Number(r.revenue) || 0;
+                const pct = (revenue / max) * 100;
+
+                return `
+                    <tr>
+                    <td class="rank-cell">${i + 1}</td>
+                    <td>
+                        <span class="track-title">${escapeHtml(r.FirstName + ' ' + r.LastName)}</span>
+                        <span class="track-artist">${escapeHtml(r.Country)}</span>
+                    </td>
+                    <td class="sales-cell">
+                        <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end;">
+                        <div class="progress" style="flex:1; max-width:160px;">
+                            <div style="width:${pct.toFixed(1)}%"></div>
+                        </div>
+                        <div style="min-width:60px; text-align:right;">
+                            ${formatCurrency(revenue)}
+                        </div>
+                        </div>
+                    </td>
+                    </tr>
+                `;
+                }).join("")}
+            </tbody>
+        </table>
+    `;
+}
+
+
+
 
 // -------------------------------------RENDER MUSIC-------------------------------------
 

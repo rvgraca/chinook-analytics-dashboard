@@ -40,3 +40,13 @@ export function getLastYearData(data) {
         return d >= oneYearAgo && d <= maxDate;
     });
 }
+
+// helper simple para evitar inyectar HTML accidentalmente
+export function escapeHtml(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}

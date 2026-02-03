@@ -2,7 +2,11 @@ const express = require("express");
 const router = express.Router();
 const db = require("../database/db");
 
-// ---------------------------- /SQL QUERIES/ ---------------------------- 
+//------------------------------------------------------- /SQL QUERIES/ ------------------------------------------------------- 
+
+
+// ---------------------------- /OVERVIEW QUERIES/ ---------------------------- 
+
 
 const overviewSQL = `
 SELECT
@@ -52,10 +56,78 @@ ORDER BY revenue DESC;
 
 
 `;
+// ---------------------------- /OVERVIEW QUERIES/ ---------------------------- 
+
+// ---------------------------- /SALES QUERIES/ ---------------------------- 
+const salesMetricsSQL = `
+WITH
+metrics_items AS (
+  SELECT
+    SUM(ii.Quantity * ii.UnitPrice) AS totalRevenue,
+    COUNT(DISTINCT ii.InvoiceId)     AS totalInvoices,
+    SUM(ii.Quantity)                 AS tracksSold
+  FROM invoice_items ii
+),
+metrics_invoices AS (
+  SELECT AVG(Total) AS averageOrderPrice
+  FROM invoices
+)
+SELECT
+  mi.totalRevenue,
+  mi.totalInvoices,
+  mi.tracksSold,
+  mv.averageOrderPrice
+FROM metrics_items mi
+CROSS JOIN metrics_invoices mv;
+
+`;
+
+const revenueByCountrySQL = `
+SELECT
+  inv.BillingCountry,
+  SUM(inv.Total) AS revenueByCountry
+FROM invoices inv
+GROUP BY inv.BillingCountry
+ORDER BY revenueByCountry DESC;
+`;
+
+const topTracksByRevenueSQL = `
+SELECT
+  tr.Name AS track,
+  ar.Name AS artist,
+  SUM(ii.Quantity * ii.UnitPrice) AS revenue,
+  SUM(ii.Quantity) AS units
+FROM invoice_items ii
+JOIN tracks tr  ON tr.TrackId = ii.TrackId
+JOIN albums al  ON al.AlbumId = tr.AlbumId
+JOIN artists ar ON ar.ArtistId = al.ArtistId
+GROUP BY tr.TrackId
+ORDER BY revenue DESC
+LIMIT 10;
+`;
+
+const topCustomersSQL = `
+SELECT
+  cus.CustomerId,
+  cus.FirstName,
+  cus.LastName,
+  cus.Country,
+  cus.Email,
+  SUM(inv.Total) AS revenue,
+  COUNT(inv.InvoiceId) AS invoices
+FROM invoices inv
+JOIN customers cus ON cus.CustomerId = inv.CustomerId
+GROUP BY
+  cus.CustomerId, cus.FirstName, cus.LastName, cus.Country, cus.Email
+ORDER BY revenue DESC
+LIMIT 10;
+
+`;
 
 
+// ---------------------------- /SALES QUERIES/ ---------------------------- 
 
-// ---------------------------- /SQL QUERIES/ ----------------------------
+// -------------------------------------------------------/SQL QUERIES/ -------------------------------------------------------
 
 
 
@@ -105,20 +177,28 @@ router.get("/overview", async (req, res) => {
   }
 });
 
+router.get("/sales", async (req, res) => {
+  try {
+    const salesMetrics = await dbGet(salesMetricsSQL);
+    const revenueOverTime = await dbAll(revenueOverTimeSQL);
+    const revenueByCountry = await dbAll(revenueByCountrySQL);
+    const topTracksByRevenue = await dbAll(topTracksByRevenueSQL);
+    const topCustomers = await dbAll(topCustomersSQL);
 
-router.get("/sales", (req, res) => {
-    const sql = `
-        SELECT SUM(UnitPrice * Quantity) AS totalSales
-        FROM invoice_items; 
-    `;
 
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(row);
+    res.json({
+      ...salesMetrics,
+        revenueOverTime,
+        revenueByCountry,
+        topTracksByRevenue,
+        topCustomers,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+
 router.get("/music", (req, res) => {
     const sql = `
         SELECT SUM(UnitPrice * Quantity) AS totalSales

@@ -177,9 +177,9 @@
 
 /* ------------------------------------------*/
 
-.view[data-view="overview"] {
+.cq-enabled {
   container-type: inline-size;
-  container-name: overview;
+  container-name: dashboard;
 }
 
 
@@ -206,6 +206,12 @@
   margin: 0;
   color: var(--color-text); 
   font-size: 1.1rem;
+}
+
+.metric-card i{
+  color: #666;
+  font-size: 1.4rem;
+  margin: 0.4rem;
 }
 
 .metric-card h2 {
@@ -275,7 +281,83 @@
   z-index: 900;
 }
 
-@container overview (max-width: 900px) {
+/*-----------------------------------------------------------------*/
+.tablesStyle {
+  display: flex;
+  justify-content: center;
+
+}
+
+.top-tracks-table {
+  width: 90%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top:0.5rem;
+}
+
+.top-tracks-table th,
+.top-tracks-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  vertical-align: middle;
+}
+
+.top-tracks-table th {
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.track-title {
+  font-weight: 600;
+}
+
+.track-artist {
+  color: #6b7280;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.progress {
+  height: 10px;
+  background: rgba(59,130,246,.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress > div {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 999px;
+}
+
+.sales-cell {
+  width: 220px;
+}
+
+.rank-cell {
+  width: 40px;
+  color: #6b7280;
+}
+
+
+/*-----------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+/*-----------------------------------------------------------------*/
+
+
+
+/*-----------------------------------------------------------------*/
+
+@container dashboard (max-width: 900px) {
   .charts {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
@@ -286,7 +368,7 @@
   }
 }
 
-@container overview (max-width: 600px) {
+@container dashboard (max-width: 600px) {
   .metrics {
     grid-template-columns: 1fr;
     gap: 12px;
