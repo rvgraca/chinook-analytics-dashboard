@@ -30,14 +30,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
     <!-- CSS -->
     <link rel="stylesheet" href="/styles/globals.css" />
     <link rel="stylesheet" href="/css/main.css" />
 
     <link rel="icon" type="image/x-icon" href="./assets/icons/pie-chart.png">
+
+    <!--FONT AWESOME-->
+    <link rel="stylesheet" href="/assets/fontawesome/fontawesome-free-7.1.0-web/css/all.min.css">
 
 
 </head>
@@ -188,17 +188,43 @@
 
                 <div class="chart-card">
                     <h3>Top Tracks</h3>
-                    <div class="tablesStyle" id="topTracksTable"></div>
+                    <div class="divTableStyle" id="topTracksTable"></div>
                 </div>
 
                 <div class="chart-card">
                     <h3>Top Artists</h3>
-                    <div class="tablesStyle" id="topCustomersTable"></div>
+                    <div class="divTableStyle" id="topCustomersTable"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="view cq-enabled" data-view="music">
+            <div class="charts">
+                <div class="chart-card">
+                    <h3>Genre Distribution</h3> <div class="canvas-wrapper">
+                        <canvas id="genreDistributionByGenre"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <h3>Sales Over Time By Genre</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="revenueByTopGenresOverTime"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Top Genres</h3>
+                    <div class="divTableStyle" id="topGenresByUnitsSoldTable"></div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Top Playlists</h3>
+                    <div class="divTableStyle" id="playlistsByRevenueCoverageTable"></div>
                 </div>
             </div>
         </section>
 
-        <section class="view" data-view="music"></section>
         <section class="view" data-view="customers"></section>
         <section class="view" data-view="geography"></section>
         <section class="view" data-view="employees"></section>

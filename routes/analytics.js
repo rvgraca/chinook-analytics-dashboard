@@ -29,7 +29,8 @@ JOIN tracks tr
 JOIN invoice_items ii
     ON ii.TrackId = tr.TrackId
 GROUP BY gen.GenreId, gen.Name
-ORDER BY revenue DESC;
+ORDER BY revenue DESC
+LIMIT 5;
 `;
 
 const revenueOverTimeSQL = `
@@ -127,6 +128,56 @@ LIMIT 10;
 
 // ---------------------------- /SALES QUERIES/ ---------------------------- 
 
+// ---------------------------- /MUSIC QUERIES/ ---------------------------- 
+const topGenresByRevenueSQL = `
+SELECT
+  gen.GenreId AS id,
+  gen.Name    AS name,
+  SUM(ii.Quantity * ii.UnitPrice) AS revenue,
+  SUM(ii.Quantity) AS unitsSold
+FROM genres gen
+JOIN tracks tr       ON tr.GenreId = gen.GenreId
+JOIN invoice_items ii ON ii.TrackId = tr.TrackId
+GROUP BY gen.GenreId
+ORDER BY revenue DESC
+LIMIT 10;
+`;
+const topGenresByUnitsSoldSQL = `
+SELECT
+  gen.GenreId AS id,
+  gen.Name    AS name,
+  SUM(ii.Quantity * ii.UnitPrice) AS revenue,
+  SUM(ii.Quantity) AS unitsSold
+FROM genres gen
+JOIN tracks tr       ON tr.GenreId = gen.GenreId
+JOIN invoice_items ii ON ii.TrackId = tr.TrackId
+GROUP BY gen.GenreId
+ORDER BY unitsSold DESC
+LIMIT 10;
+`;
+
+const playlistsByRevenueCoverageSQL = `
+SELECT
+  p.Name AS playlist,
+  SUM(ii.Quantity * ii.UnitPrice) AS coverage_revenue,
+  SUM(ii.Quantity) AS coverage_units
+FROM invoice_items ii
+JOIN tracks tr
+  ON tr.TrackId = ii.TrackId
+JOIN playlist_track pt
+  ON pt.TrackId = tr.TrackId
+JOIN playlists p
+  ON p.PlaylistId = pt.PlaylistId
+GROUP BY p.PlaylistId, p.Name
+ORDER BY coverage_revenue DESC
+LIMIT 10;
+`;
+ 
+
+
+
+// ---------------------------- /MUSIC QUERIES/ ---------------------------- 
+
 // -------------------------------------------------------/SQL QUERIES/ -------------------------------------------------------
 
 
@@ -177,6 +228,7 @@ router.get("/overview", async (req, res) => {
   }
 });
 
+
 router.get("/sales", async (req, res) => {
   try {
     const salesMetrics = await dbGet(salesMetricsSQL);
@@ -198,33 +250,45 @@ router.get("/sales", async (req, res) => {
   }
 });
 
+router.get("/music", async (req, res) => {
+  try {
+    const topGenresByRevenue = await dbAll(topGenresByRevenueSQL);
+    const topGenresByUnitsSold = await dbAll(topGenresByUnitsSoldSQL);
+    const playlistsByRevenueCoverage = await dbAll(playlistsByRevenueCoverageSQL);
+    const top5GenresByRevenue = topGenresByRevenue.slice(0, 5);
 
-router.get("/music", (req, res) => {
-    const sql = `
-        SELECT SUM(UnitPrice * Quantity) AS totalSales
-        FROM invoice_items; 
+    const ids = top5GenresByRevenue.map(g => g.id);
+    const placeholders = ids.map(() => "?").join(",");
+
+
+    const revenueByTopGenresOverTimeSQL = `
+        SELECT
+        strftime('%Y-%m', inv.InvoiceDate) AS period,
+        gen.GenreId AS genreId,
+        gen.Name    AS genre,
+        SUM(ii.Quantity * ii.UnitPrice)    AS revenue
+        FROM invoices inv
+        JOIN invoice_items ii ON ii.InvoiceId = inv.InvoiceId
+        JOIN tracks tr        ON tr.TrackId = ii.TrackId
+        JOIN genres gen       ON gen.GenreId = tr.GenreId
+        WHERE gen.GenreId IN (${placeholders})
+        GROUP BY period, gen.GenreId
+        ORDER BY period ASC, gen.GenreId ASC;
     `;
+    const revenueByTopGenresOverTime = await dbAll(revenueByTopGenresOverTimeSQL, ids);
 
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(row);
+    res.json({
+        topGenresByRevenue,
+        topGenresByUnitsSold,
+        playlistsByRevenueCoverage,
+        top5GenresByRevenue,
+        revenueByTopGenresOverTime,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
-router.get("/customers", (req, res) => {
-    const sql = `
-        SELECT SUM(UnitPrice * Quantity) AS totalSales
-        FROM invoice_items; 
-    `;
 
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(row);
-    });
-});
 router.get("/customers", (req, res) => {
     const sql = `
         SELECT SUM(UnitPrice * Quantity) AS totalSales
