@@ -110,10 +110,10 @@ LIMIT 10;
 const topCustomersSQL = `
 SELECT
   cus.CustomerId,
-  cus.FirstName,
-  cus.LastName,
-  cus.Country,
-  cus.Email,
+  cus.FirstName AS FirstName,
+  cus.LastName AS LastName,
+  cus.Country AS Country,
+  cus.Email AS email,
   SUM(inv.Total) AS revenue,
   COUNT(inv.InvoiceId) AS invoices
 FROM invoices inv
@@ -173,10 +173,43 @@ ORDER BY coverage_revenue DESC
 LIMIT 10;
 `;
  
-
-
-
 // ---------------------------- /MUSIC QUERIES/ ---------------------------- 
+
+
+// ---------------------------- /CUSTOMERS QUERIES/ ---------------------------- 
+const newCustomersOverTimeSQL = `
+WITH first_purchase AS (
+  SELECT
+    CustomerId,
+    MIN(InvoiceDate) AS first_date
+  FROM invoices
+  GROUP BY CustomerId
+)
+SELECT
+  strftime('%Y-%m', first_date) AS period,
+  COUNT(*) AS new_customers
+FROM first_purchase
+GROUP BY period
+ORDER BY period;
+`;
+
+const revenueBySupportRepSQL = `
+SELECT
+  emp.EmployeeId,
+  emp.LastName AS LastName,
+  emp.FirstName AS FirstName,
+  emp.Country AS Country,
+  SUM(inv.Total) AS revenue
+FROM employees emp
+JOIN customers cust ON cust.SupportRepId = emp.EmployeeId
+JOIN invoices inv ON inv.CustomerId = cust.CustomerId
+GROUP BY emp.EmployeeId
+ORDER BY revenue DESC;
+`;
+
+// ---------------------------- /CUSTOMERS QUERIES/ ---------------------------- 
+
+
 
 // -------------------------------------------------------/SQL QUERIES/ -------------------------------------------------------
 
@@ -289,19 +322,24 @@ router.get("/music", async (req, res) => {
   }
 });
 
-router.get("/customers", (req, res) => {
-    const sql = `
-        SELECT SUM(UnitPrice * Quantity) AS totalSales
-        FROM invoice_items; 
-    `;
+router.get("/customers", async (req, res) => {
+  try {
+    const revenueByCountry = await dbAll(revenueByCountrySQL);
+    const newCustomersOverTime = await dbAll(newCustomersOverTimeSQL);
+    const topCustomers = await dbAll(topCustomersSQL);
+    const revenueBySupportRep = await dbAll(revenueBySupportRepSQL);
 
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(row);
+    res.json({
+        revenueByCountry,
+        newCustomersOverTime,
+        topCustomers,
+        revenueBySupportRep,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
 router.get("/geography", (req, res) => {
     const sql = `
         SELECT SUM(UnitPrice * Quantity) AS totalSales

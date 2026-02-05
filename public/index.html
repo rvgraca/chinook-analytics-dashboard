@@ -182,7 +182,7 @@
                 <div class="chart-card">
                     <h3>Revenue By Country</h3>
                     <div class="canvas-wrapper">
-                        <canvas id="revenueByCountry"></canvas>
+                        <canvas id="sales_revenueByCountry"></canvas>
                     </div>
                 </div>
 
@@ -225,7 +225,33 @@
             </div>
         </section>
 
-        <section class="view" data-view="customers"></section>
+        <section class="view cq-enabled" data-view="customers">
+            <div class="charts">
+                <div class="chart-card">
+                    <h3>Revenue By Country</h3> <div class="canvas-wrapper">
+                        <canvas id="customers_revenueByCountry"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <h3>New Customers Over Time</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="newCustomersOverTime"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Top Customers</h3>
+                    <div class="divTableStyle" id="customers_topCustomersTable"></div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Revenue By Support Rep</h3>
+                    <div class="divTableStyle" id="revenueBySupportRepTable"></div>
+                </div>
+            </div>
+        </section>
+
         <section class="view" data-view="geography"></section>
         <section class="view" data-view="employees"></section>
       </section>

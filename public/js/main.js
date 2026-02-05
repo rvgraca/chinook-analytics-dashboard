@@ -86,12 +86,13 @@ const graphLoadingState = {
     topArtists: null,
     //sales
     sales_revenueOverTime: null,
-    revenueByCountry: null,
+    sales_revenueByCountry: null,
     //music
     genreDistributionByGenre:null,
     revenueByTopGenresOverTime:null,
-
-
+    //customers
+    customers_revenueByCountry: null,
+    newCustomersOverTime: null,
 };
 
 
@@ -219,7 +220,7 @@ function renderOverviewMetrics(data) {
     document.getElementById("tracksSold").innerHTML = `${formatNumber(data.tracksSold)}`;
 }
 
-function renderRevenueOverTime(data, canvasId = "revenueOverTime", stateKey = "revenueOverTime") {
+function renderRevenueOverTime(data, canvasId = "overview_revenueOverTime", stateKey = "overview_revenueOverTime") {
 
     if (graphLoadingState[stateKey]) return;
 
@@ -484,7 +485,7 @@ function renderSales(data) {
 
     renderSalesMetric(data);
     renderRevenueOverTime(data, "sales_revenueOverTime", "sales_revenueOverTime");
-    renderRevenueByCountry(data);
+    renderRevenueByCountry(data, "sales_revenueByCountry", "sales_revenueByCountry");
     renderTopTracksTable(data);
     renderTopCustomers(data);
 }
@@ -496,8 +497,8 @@ function renderSalesMetric(data) {
     document.getElementById("averageOrderPrice").innerHTML = `${formatCurrency(data.averageOrderPrice)}`;
 }
 
-function renderRevenueByCountry(data) {
-    if (graphLoadingState.revenueByCountry) return;
+function renderRevenueByCountry(data, canvasId = "sales_revenueByCountry", stateKey = "sales_revenueByCountry") {
+    if (graphLoadingState[stateKey]) return;
 
     let countries = [];
     let revenueByCountryList = [];
@@ -509,10 +510,10 @@ function renderRevenueByCountry(data) {
         revenueByCountryList.push(row.revenueByCountry);
     });
 
-    const ctx = document.getElementById("revenueByCountry");
+    const ctx = document.getElementById(canvasId);
     if (!ctx) return; // evita crash silencioso
     
-    graphLoadingState.revenueByCountry = new Chart(
+    graphLoadingState[stateKey] = new Chart(
         ctx,
         {
             type: "doughnut",
@@ -720,8 +721,6 @@ function renderTopGenresByRevenue (data) {
         }
     );
 }
-
-
 
 function renderSalesOverTimeByGenre (data) {
     if (graphLoadingState.revenueByTopGenresOverTime) return;
@@ -946,10 +945,207 @@ function renderPlaylistsByRevenueCoverage (data) {
 function renderCustomers(data) {
     console.log(data);
     const view = document.querySelector('.view[data-view="customers"]');
-    view.innerHTML = `
-        HOLA, ESTO ES customers
+    renderRevenueByCountry(data, "customers_revenueByCountry", "customers_revenueByCountry");
+    renderNewCustomersOverTime(data);
+    renderTopCustomersTable(data);
+    renderRevenueBySupportRepTable(data);
+}
+
+function renderNewCustomersOverTime(data) {
+
+    if (graphLoadingState.newCustomersOverTime) return;
+    
+    const dates = [];
+    const newCustomersList = [];
+
+    for (const row of data.newCustomersOverTime) {
+        dates.push(row.period);
+        newCustomersList.push(row.new_customers);
+    }
+
+    const ctx = document.getElementById("newCustomersOverTime");
+    if (!ctx) return;
+
+    const gradient = ctx.getContext("2d").createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, "rgba(59,130,246,0.35)");
+    gradient.addColorStop(1, "rgba(59,130,246,0.05)");
+
+    graphLoadingState.newCustomersOverTime = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: dates,
+            datasets: [{
+                label: "Costumers",
+                data: newCustomersList,
+                borderWidth: 2.5,
+                borderColor: "#2563eb",
+                backgroundColor: gradient,
+                fill: true,
+                pointRadius: 0,
+                lineTension: 0.25,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            title: {
+                display: false
+            },
+            tooltips: {
+                mode: "index",
+                intersect: false,
+                backgroundColor: "#111827",
+                callbacks: {
+                    label: function(t) {
+                        return formatNumber(t.yLabel);
+                    }
+                }
+            },
+            hover: {
+                mode: "index",
+                intersect: false
+            },
+            scales: {
+                xAxes: [{
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 6,
+                        fontColor: "#6b7280"
+                    }
+                }],
+                yAxes: [{
+                    gridLines: {
+                        color: "rgba(0,0,0,0.05)"
+                    },
+                    ticks: {
+                        beginAtZero: true,
+                        fontColor: "#6b7280",
+                        callback: function(v) {
+                            return formatNumber(v);
+                        }
+                    }
+                }]
+            }
+        }
+    });
+}
+
+function renderTopCustomersTable(data) {
+    const N_CUSTOMERS = 5;
+    const rows = data.topCustomers.slice(0, N_CUSTOMERS);
+
+
+    const el = document.getElementById("customers_topCustomersTable");
+    if (!el) return;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        el.innerHTML = "<p style='color:#6b7280;margin:0'>No data</p>";
+        return;
+    }
+
+    const max = Math.max(...rows.map(r => Number(r.revenue) || 0)) || 1;
+
+    el.innerHTML = `
+        <table class="tableStyle">
+        <thead>
+            <tr>
+            <th class="rank-cell">#</th>
+            <th>Customer</th>
+            <th>Country</th>
+            <th class="number-cell" style="text-align:right">Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map((r, i) => {
+            const revenue = Number(r.revenue) || 0;
+            const pct = (revenue / max) * 100;
+
+            return `
+                <tr>
+                <td class="rank-cell">${i + 1}</td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.FirstName)}</span>
+                    <span class="table-subtitle">${escapeHtml(r.LastName)}</span>
+                </td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.Country)}</span>
+                </td>
+                <td class="number-cell">
+                    <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end;">
+                    <div class="progress" style="flex:1; max-width:160px;">
+                        <div style="width:${pct.toFixed(1)}%"></div>
+                    </div>
+                    <div style="min-width:60px; text-align:right;">
+                        ${formatCurrency(revenue)}
+                    </div>
+                    </div>
+                </td>
+                </tr>
+            `;
+            }).join("")}
+        </tbody>
+        </table>
     `;
 }
+
+function renderRevenueBySupportRepTable(data) {
+    const rows = data.revenueBySupportRep;
+    const el = document.getElementById("revenueBySupportRepTable");
+    if (!el) return;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        el.innerHTML = "<p style='color:#6b7280;margin:0'>No data</p>";
+        return;
+    }
+
+    const max = Math.max(...rows.map(r => Number(r.revenue) || 0)) || 1;
+
+    el.innerHTML = `
+        <table class="tableStyle">
+        <thead>
+            <tr>
+            <th class="rank-cell">#</th>
+            <th>Representative</th>
+            <th>Country</th>
+            <th class="number-cell" style="text-align:right">Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map((r, i) => {
+            const revenue = Number(r.revenue) || 0;
+            const pct = (revenue / max) * 100;
+
+            return `
+                <tr>
+                <td class="rank-cell">${i + 1}</td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.FirstName)}</span>
+                    <span class="table-subtitle">${escapeHtml(r.LastName)}</span>
+                </td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.Country)}</span>
+                </td>
+                <td class="number-cell">
+                    <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end;">
+                    <div class="progress" style="flex:1; max-width:160px;">
+                        <div style="width:${pct.toFixed(1)}%"></div>
+                    </div>
+                    <div style="min-width:60px; text-align:right;">
+                        ${formatCurrency(revenue)}
+                    </div>
+                    </div>
+                </td>
+                </tr>
+            `;
+            }).join("")}
+        </tbody>
+        </table>
+    `;
+}
+
 
 // -------------------------------------RENDER GEOGRAPHY-------------------------------------
 function renderGeography(data) {
