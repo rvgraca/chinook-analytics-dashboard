@@ -193,6 +193,7 @@ GROUP BY period
 ORDER BY period;
 `;
 
+// ---------------------------- /CUSTOMERS QUERIES/ ---------------------------- 
 const revenueBySupportRepSQL = `
 SELECT
   emp.EmployeeId,
@@ -207,7 +208,17 @@ GROUP BY emp.EmployeeId
 ORDER BY revenue DESC;
 `;
 
-// ---------------------------- /CUSTOMERS QUERIES/ ---------------------------- 
+// ---------------------------- /GEOGRAPHY QUERIES/ ---------------------------- 
+const customersByCountrySQL = `
+SELECT
+    cust.Country AS Country,
+    SUM(inv.Total) AS revenue,
+    COUNT(DISTINCT cust.CustomerId) AS TotalClients
+FROM customers cust
+JOIN invoices inv ON inv.CustomerId = cust.CustomerId
+GROUP BY cust.Country
+ORDER BY revenue DESC;
+`;
 
 
 
@@ -340,86 +351,30 @@ router.get("/customers", async (req, res) => {
   }
 });
 
-router.get("/geography", (req, res) => {
-    const sql = `
-        SELECT SUM(UnitPrice * Quantity) AS totalSales
-        FROM invoice_items; 
-    `;
+router.get("/geography", async (req, res) => {
+  try {
+    const customersByCountry = await dbAll(customersByCountrySQL);
+    
 
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(row);
+    res.json({
+        customersByCountry,
     });
-});
-router.get("/employees", (req, res) => {
-    const sql = `
-        SELECT SUM(UnitPrice * Quantity) AS totalSales
-        FROM invoice_items; 
-    `;
-
-    db.get(sql, [], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(row);
-    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+router.get("/employees", async (req, res) => {
+  try {
+    const customersByCountry = await dbAll(customersByCountrySQL);
+    
 
-
-
-
-
-// router
-//     .route("/")
-//     .get((req, res) => {
-//         res.json(students);
-//     })
-//     .post((req, res) => {
-//         const {name, age, email} = req.body;    
-//         const newStudent = {
-//             id:students.length+1,
-//             name,
-//             age,
-//             email
-//         };
-//         students.push(newStudent);
-//         res.json({
-//             ok: true, 
-//             student:newStudent,
-//             students
-//         });
-//     })
-//     .delete((req,res) => {
-//         const {id} = req.body;
-//         console.log(id);
-//         const index = students.findIndex(student => student.id === id);
-//         if (index === -1) {
-//             return res.status(404).json({error: "User not found"});
-//         }
-//         students.splice(index, 1);
-//         res.json({ok: true, students: students});
-//     })
-
-// router
-//     .route("/:id")
-//     .get((req, res) => {
-
-//     })
-//     .post((req, res) => {
-
-//     })
-//     .delete((req,res) => {
-//         const id = Number(req.params.id);
-//         const index = students.findIndex(student => student.id === id);
-//         if (index === -1) {
-//             return res.status(404).json({error: "User not found"});
-//         }
-//         students.splice(index, 1);
-//         res.json({ok: true});
-//     })
-
+    res.json({
+        customersByCountry,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

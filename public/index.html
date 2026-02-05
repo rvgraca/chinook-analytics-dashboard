@@ -41,230 +41,242 @@
 
 
 </head>
-<body>
-  <div class="app">
-    <header class="header">
-        <div class="title">
-            <img class="pie-chart" src="./assets/icons/pie-chart.png" alt="pie-chart">
-            <h1 id="chinookTitle">Chinook Analytics Dashboard</h1>
+    <body>
+        <div class="app">
+            <header class="header">
+                <div class="title">
+                    <img class="pie-chart" src="./assets/icons/pie-chart.png" alt="pie-chart">
+                    <h1 id="chinookTitle">Chinook Analytics Dashboard</h1>
+                    <h1 id="mobileChinookTitle">Chinook</h1>
+                </div>
+                <button class="menu-btn" aria-controls="sidebar" aria-expanded="false">
+                    <span class="icon icon-open"><i class="fa-solid fa-bars"></i></span>
+                </button>
+            </header>
+
+            <aside class="sidebar" id="sidebar">
+                <h1 class="sidebar-title">Chinook</h1>
+                <nav class="sidebar-nav">
+                    <button data-view="overview" class="active">
+                    <i class="fa-solid fa-table-cells-large"></i> Overview
+                    </button>
+                    <button data-view="sales">
+                    <i class="fa-solid fa-chart-line"></i> Sales
+                    </button>
+                    <button data-view="music">
+                    <i class="fa-solid fa-music"></i> Music
+                    </button>
+                    <button data-view="customers">
+                    <i class="fa-solid fa-users"></i> Customers
+                    </button>
+                    <button data-view="geography">
+                    <i class="fa-solid fa-earth-americas"></i> Geography
+                    </button>
+                    <button data-view="employees">
+                    <i class="fa-solid fa-user-tie"></i> Employees
+                    </button>
+                </nav>
+            </aside>
+            <div class="backdrop" hidden></div>
+
+            <main class="main">
+                <header class="topbar">
+                </header>
+
+                <section class="content">
+                    <section class="active view cq-enabled" data-view="overview">
+
+                        <div class="metrics">
+                            <div class="metric-card">
+                                <p>Total Revenue</p>
+                                <h2 id="totalRevenue">—</h2>
+                            </div>
+
+                            <div class="metric-card">
+                                <p>Total Invoices</p>
+                                <h2 id="totalInvoices">—</h2>
+                            </div>
+
+                            <div class="metric-card">
+                                <p>Unique Customers</p>
+                                <h2 id="uniqueCustomers">—</h2>
+                            </div>
+
+                            <div class="metric-card">
+                                <p>Tracks Sold</p>
+                                <h2 id="tracksSold">—</h2>
+                            </div>
+                        </div>
+                        <div class="charts">
+                            <div class="chart-card">
+                                <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
+                                    <canvas id="overview_revenueOverTime"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Revenue By Genre</h3>
+                                <div class="canvas-wrapper">
+                                    <canvas id="revenueByGenre"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Last Year Revenue</h3>
+                                <div class="canvas-wrapper">
+                                    <canvas id="lastYearRevenue"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Top Artists</h3>
+                                <div class="canvas-wrapper">
+                                    <canvas id="topArtistsByRevenue"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view cq-enabled" data-view="sales">
+
+                        <div class="metrics">
+                            <div class="metric-card">                    
+                                <p>
+                                    <i class="fa-solid fa-cart-shopping"></i> 
+                                    Total sales
+                                </p>
+                                <h2 id="totalSales">—</h2>
+                            </div>
+
+                            <div class="metric-card">
+                                <p>
+                                    <i class="fa-regular fa-calendar"></i>
+                                    Total Invoices
+                                </p>
+                                <h2 id="totalSalesInvoices">—</h2>
+                            </div>
+
+                            <div class="metric-card">
+                                <p>
+                                    <i class="fa-solid fa-music"></i>
+                                    Total tracks sold
+                                </p>
+                                <h2 id="tracksSalesSold">—</h2>
+                            </div>
+
+                            <div class="metric-card">
+                                <p>
+                                    <i class="fa-solid fa-magnifying-glass-dollar"></i>
+                                    Average Order Price
+                                </p>
+                                <h2 id="averageOrderPrice">—</h2>
+                            </div>
+                        </div>
+                        <div class="charts">
+                            <div class="chart-card">
+                                <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
+                                    <canvas id="sales_revenueOverTime"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Revenue By Country</h3>
+                                <div class="canvas-wrapper">
+                                    <canvas id="sales_revenueByCountry"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Top Tracks</h3>
+                                <div class="divTableStyle" id="topTracksTable"></div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Top Artists</h3>
+                                <div class="divTableStyle" id="topCustomersTable"></div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="view cq-enabled" data-view="music">
+                        <div class="charts">
+                            <div class="chart-card">
+                                <h3>Genre Distribution</h3> <div class="canvas-wrapper">
+                                    <canvas id="genreDistributionByGenre"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Sales Over Time By Genre</h3>
+                                <div class="canvas-wrapper">
+                                    <canvas id="revenueByTopGenresOverTime"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Top Genres</h3>
+                                <div class="divTableStyle" id="topGenresByUnitsSoldTable"></div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Top Playlists</h3>
+                                <div class="divTableStyle" id="playlistsByRevenueCoverageTable"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view cq-enabled" data-view="customers">
+                        <div class="charts">
+                            <div class="chart-card">
+                                <h3>Revenue By Country</h3> <div class="canvas-wrapper">
+                                    <canvas id="customers_revenueByCountry"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>New Customers Over Time</h3>
+                                <div class="canvas-wrapper">
+                                    <canvas id="newCustomersOverTime"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Top Customers</h3>
+                                <div class="divTableStyle" id="customers_topCustomersTable"></div>
+                            </div>
+
+                            <div class="chart-card">
+                                <h3>Revenue By Support Rep</h3>
+                                <div class="divTableStyle" id="revenueBySupportRepTable"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="view cq-enabled" data-view="geography">
+                        <div class="charts">
+                            <div class="chart-card geo-map-card">
+                            <h3>Customers By Country Globally</h3>
+                            <div class="canvas-wrapper">
+                                <canvas id="geoMap"></canvas>
+                            </div>
+
+                            <div class="chart-card geo-overlay-table">
+                                <h3>Top Countries</h3>
+                                <div id="customersByCountryTable"></div>
+                            </div>
+                            </div>
+
+                        </div>
+                    </section>
+
+            </main>
         </div>
-        <button class="menu-btn" aria-controls="sidebar" aria-expanded="false">
-            <span class="icon icon-open"><i class="fa-solid fa-bars"></i></span>
-            <span class="icon icon-close" aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
-        </button>
-    </header>
 
-    <aside class="sidebar" id="sidebar">
-    <h1 class="sidebar-title">Chinook</h1>
-    <nav class="sidebar-nav">
-        <button data-view="overview" class="active">
-        <i class="fa-solid fa-table-cells-large"></i> Overview
-        </button>
-        <button data-view="sales">
-        <i class="fa-solid fa-chart-line"></i> Sales
-        </button>
-        <button data-view="music">
-        <i class="fa-solid fa-music"></i> Music
-        </button>
-        <button data-view="customers">
-        <i class="fa-solid fa-users"></i> Customers
-        </button>
-        <button data-view="geography">
-        <i class="fa-solid fa-earth-americas"></i> Geography
-        </button>
-        <button data-view="employees">
-        <i class="fa-solid fa-user-tie"></i> Employees
-        </button>
-    </nav>
-    </aside>
-    <div class="backdrop" hidden></div>
+        <!-- CHART JS v4 -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4"></script>
 
-    <main class="main">
-      <header class="topbar">
-      </header>
-
-      <section class="content">
-        <section class="active view cq-enabled" data-view="overview">
-
-            <div class="metrics">
-                <div class="metric-card">
-                    <p>Total Revenue</p>
-                    <h2 id="totalRevenue">—</h2>
-                </div>
-
-                <div class="metric-card">
-                    <p>Total Invoices</p>
-                    <h2 id="totalInvoices">—</h2>
-                </div>
-
-                <div class="metric-card">
-                    <p>Unique Customers</p>
-                    <h2 id="uniqueCustomers">—</h2>
-                </div>
-
-                <div class="metric-card">
-                    <p>Tracks Sold</p>
-                    <h2 id="tracksSold">—</h2>
-                </div>
-            </div>
-            <div class="charts">
-                <div class="chart-card">
-                    <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
-                        <canvas id="overview_revenueOverTime"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <h3>Revenue By Genre</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="revenueByGenre"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Last Year Revenue</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="lastYearRevenue"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Top Artists</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="topArtistsByRevenue"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="view cq-enabled" data-view="sales">
-
-            <div class="metrics">
-                <div class="metric-card">                    
-                    <p>
-                        <i class="fa-solid fa-cart-shopping"></i> 
-                        Total sales
-                    </p>
-                    <h2 id="totalSales">—</h2>
-                </div>
-
-                <div class="metric-card">
-                    <p>
-                        <i class="fa-regular fa-calendar"></i>
-                        Total Invoices
-                    </p>
-                    <h2 id="totalSalesInvoices">—</h2>
-                </div>
-
-                <div class="metric-card">
-                    <p>
-                        <i class="fa-solid fa-music"></i>
-                        Total tracks sold
-                    </p>
-                    <h2 id="tracksSalesSold">—</h2>
-                </div>
-
-                <div class="metric-card">
-                    <p>
-                        <i class="fa-solid fa-magnifying-glass-dollar"></i>
-                        Average Order Price
-                    </p>
-                    <h2 id="averageOrderPrice">—</h2>
-                </div>
-            </div>
-            <div class="charts">
-                <div class="chart-card">
-                    <h3>Revenue Over Time</h3> <div class="canvas-wrapper">
-                        <canvas id="sales_revenueOverTime"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <h3>Revenue By Country</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="sales_revenueByCountry"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Top Tracks</h3>
-                    <div class="divTableStyle" id="topTracksTable"></div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Top Artists</h3>
-                    <div class="divTableStyle" id="topCustomersTable"></div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="view cq-enabled" data-view="music">
-            <div class="charts">
-                <div class="chart-card">
-                    <h3>Genre Distribution</h3> <div class="canvas-wrapper">
-                        <canvas id="genreDistributionByGenre"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <h3>Sales Over Time By Genre</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="revenueByTopGenresOverTime"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Top Genres</h3>
-                    <div class="divTableStyle" id="topGenresByUnitsSoldTable"></div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Top Playlists</h3>
-                    <div class="divTableStyle" id="playlistsByRevenueCoverageTable"></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="view cq-enabled" data-view="customers">
-            <div class="charts">
-                <div class="chart-card">
-                    <h3>Revenue By Country</h3> <div class="canvas-wrapper">
-                        <canvas id="customers_revenueByCountry"></canvas>
-                    </div>
-                </div>
-                
-                <div class="chart-card">
-                    <h3>New Customers Over Time</h3>
-                    <div class="canvas-wrapper">
-                        <canvas id="newCustomersOverTime"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Top Customers</h3>
-                    <div class="divTableStyle" id="customers_topCustomersTable"></div>
-                </div>
-
-                <div class="chart-card">
-                    <h3>Revenue By Support Rep</h3>
-                    <div class="divTableStyle" id="revenueBySupportRepTable"></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="view" data-view="geography"></section>
-        <section class="view" data-view="employees"></section>
-      </section>
-    </main>
-
-  </div>
-
-
-
-    <!-- MAIN JS -->
-    <script type="module" src="./js/main.js"></script>
-    
-    <!-- CHART JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-</body>
+        <!-- MAIN JS -->
+        <script type="module" src="./js/main.js"></script>
+    </body>
 </html>
