@@ -849,7 +849,7 @@ function renderSalesOverTimeByGenre(data) {
       },
       plugins: {
         title: {
-          display: true,
+          display: false,
           text: "Revenue Over Time By Genre"
         },
         legend: {
@@ -1538,7 +1538,7 @@ function renderRevenueBySupportRepOverTime(data) {
         },
         plugins: {
         title: {
-            display: true,
+            display: false,
             text: "Revenue Over Time By Support Rep"
         },
         legend: {
