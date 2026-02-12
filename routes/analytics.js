@@ -220,6 +220,69 @@ GROUP BY cust.Country
 ORDER BY revenue DESC;
 `;
 
+// ---------------------------- /EMPLOYEES QUERIES/ ---------------------------- 
+
+
+
+//metrics
+
+
+const employeesMetricsSQL = `
+SELECT
+  -- Total empleados en la tabla employees
+  (SELECT COUNT(*) FROM employees) AS totalEmployees,
+
+  -- Empleados que efectivamente tienen clientes asignados como soporte
+  (SELECT COUNT(DISTINCT SupportRepId)
+   FROM customers
+   WHERE SupportRepId IS NOT NULL) AS totalSupportReps,
+
+  -- Clientes que tienen SupportRep asignado
+  (SELECT COUNT(*)
+   FROM customers
+   WHERE SupportRepId IS NOT NULL) AS totalClientsAssisted,
+
+  -- Revenue total gestionado por esos support reps
+  (SELECT COALESCE(SUM(inv.Total), 0)
+   FROM invoices inv
+   JOIN customers cust ON cust.CustomerId = inv.CustomerId
+   WHERE cust.SupportRepId IS NOT NULL) AS totalRevenueGenerated;
+`;
+
+//graphs
+const revenueBySupportRepOverTimeSQL = `
+SELECT
+  strftime('%Y-%m', inv.InvoiceDate) AS period,
+  emp.EmployeeId AS employeeId,
+  emp.FirstName    AS FirstName,
+  emp.LastName    AS LastName,
+  SUM(inv.Total)  AS revenue
+FROM employees emp
+JOIN customers cust ON cust.SupportRepId = emp.EmployeeId
+JOIN invoices inv ON inv.CustomerId = cust.CustomerId
+GROUP BY period, employeeId
+ORDER BY period ASC, employeeId ASC;
+`;
+
+const supportRepPerformanceSQL = `
+SELECT
+  emp.EmployeeId,
+  emp.LastName AS LastName,
+  emp.FirstName AS FirstName,
+  emp.Country AS Country,
+  SUM(inv.Total) AS revenue,
+  COUNT(DISTINCT cust.CustomerId) AS totalCustomers,
+  COUNT(inv.InvoiceId) AS totalInvoices
+FROM employees emp
+JOIN customers cust ON cust.SupportRepId = emp.EmployeeId
+JOIN invoices inv ON inv.CustomerId = cust.CustomerId
+GROUP BY emp.EmployeeId
+ORDER BY revenue DESC;
+`;
+
+//
+
+
 
 
 // -------------------------------------------------------/SQL QUERIES/ -------------------------------------------------------
@@ -245,6 +308,7 @@ const dbGet = (sql, params = []) =>
         err ? reject(err) : resolve(row)
     );
 });
+
 
 const dbAll = (sql, params = []) =>
     new Promise((resolve, reject) => {
@@ -366,11 +430,16 @@ router.get("/geography", async (req, res) => {
 
 router.get("/employees", async (req, res) => {
   try {
-    const customersByCountry = await dbAll(customersByCountrySQL);
+    const employeesMetrics = await dbGet(employeesMetricsSQL);
+    const revenueBySupportRepOverTime = await dbAll(revenueBySupportRepOverTimeSQL);
+    const supportRepPerformance = await dbAll(supportRepPerformanceSQL);
+
     
 
     res.json({
-        customersByCountry,
+        employeesMetrics,
+        revenueBySupportRepOverTime,
+        supportRepPerformance,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

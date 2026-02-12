@@ -1,4 +1,4 @@
-import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData, escapeHtml, buildRevenueSeriesByGenre} from './modules/utils.js'
+import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData, escapeHtml, buildRevenueSeriesByGenre, buildRevenueSeriesBySupportRep} from './modules/utils.js'
 
 const menuBtn = document.querySelector(".menu-btn");
 const sideBar = document.querySelector(".sidebar");
@@ -198,6 +198,9 @@ const graphLoadingState = {
     //customers
     customers_revenueByCountry: null,
     newCustomersOverTime: null,
+    //employees
+    customersBySupportRep: null,
+    revenueBySupportRepOverTime: null,
 };
 
 
@@ -251,17 +254,14 @@ async function loadEmployees() {
 // -------------------------------------FETCHES-------------------------------------
 async function fetchOverview() {
     if (!viewLoadingState.overview) {
-        console.log("cargando overview");
         const res = await fetch("/api/analytics/overview");
         const data = await res.json();
         viewLoadingState.overview = data;
     }
     return viewLoadingState.overview;
 }
-
 async function fetchSales() {
     if (!viewLoadingState.sales) {
-        console.log("cargando sales");
         const res = await fetch("/api/analytics/sales");
         const data = await res.json();
         viewLoadingState.sales = data;
@@ -270,7 +270,6 @@ async function fetchSales() {
 }
 async function fetchMusic() {
     if (!viewLoadingState.music) {
-        console.log("cargando music");
         const res = await fetch("/api/analytics/music");
         const data = await res.json();
         viewLoadingState.music = data;
@@ -279,7 +278,6 @@ async function fetchMusic() {
 }
 async function fetchCustomers() {
     if (!viewLoadingState.customers) {
-        console.log("cargando customers");
         const res = await fetch("/api/analytics/customers");
         const data = await res.json();
         viewLoadingState.customers = data;
@@ -288,7 +286,6 @@ async function fetchCustomers() {
 }
 async function fetchGeography() {
     if (!viewLoadingState.geography) {
-        console.log("cargando geography");
         const res = await fetch("/api/analytics/geography");
         const data = await res.json();
         viewLoadingState.geography = data;
@@ -297,7 +294,6 @@ async function fetchGeography() {
 }
 async function fetchEmployees() {
     if (!viewLoadingState.employees) {
-        console.log("cargando employees");
         const res = await fetch("/api/analytics/employees");
         const data = await res.json();
         viewLoadingState.employees = data;
@@ -306,11 +302,9 @@ async function fetchEmployees() {
 }
 
 // -------------------------------------RENDERING-------------------------------------
-//
 
 // -------------------------------------RENDER OVERVIEW-------------------------------------
 function renderOverview(data) {
-    // const view = document.querySelector('.view[data-view="overview"]');
     renderOverviewMetrics(data);
     renderRevenueOverTime(data, "overview_revenueOverTime", "overview_revenueOverTime");
     renderRevenueByGenre(data);
@@ -573,9 +567,6 @@ function renderTopArtists(data) {
 
 // -------------------------------------RENDER SALES-------------------------------------
 function renderSales(data) {
-
-    const view = document.querySelector('.view[data-view="sales"]');
-
     renderSalesMetric(data);
     renderRevenueOverTime(data, "sales_revenueOverTime", "sales_revenueOverTime");
     renderRevenueByCountry(data, "sales_revenueByCountry", "sales_revenueByCountry");
@@ -643,7 +634,6 @@ function renderRevenueByCountry(data, canvasId = "sales_revenueByCountry", state
 }
 
 function renderTopTracksTable(data) {
-    console.log(data);
     const N_TRACKS = 5;
     const rows = data.topTracksByRevenue.slice(0, N_TRACKS);
 
@@ -698,7 +688,6 @@ function renderTopTracksTable(data) {
 }
 
 function renderTopCustomers(data) {
-    console.log(data);
     const N_PEOPLE = 5;
     const rows = data.topCustomers.slice(0, N_PEOPLE);
 
@@ -758,8 +747,6 @@ function renderTopCustomers(data) {
 // -------------------------------------RENDER MUSIC-------------------------------------
 
 function renderMusic(data) {
-    console.log(data);
-    const view = document.querySelector('.view[data-view="music"]');
     renderTopGenresByRevenue(data);
     renderSalesOverTimeByGenre(data);
     renderTopGenresByUnitsSold(data);
@@ -1026,12 +1013,10 @@ function renderPlaylistsByRevenueCoverage (data) {
 
 // -------------------------------------RENDER CUSTOMERS-------------------------------------
 function renderCustomers(data) {
-    console.log(data);
-    const view = document.querySelector('.view[data-view="customers"]');
     renderRevenueByCountry(data, "customers_revenueByCountry", "customers_revenueByCountry");
     renderNewCustomersOverTime(data);
     renderTopCustomersTable(data);
-    renderRevenueBySupportRepTable(data);
+    renderRevenueBySupportRepTable("customers_revenueBySupportRepTable", data);
 }
 
 function renderNewCustomersOverTime(data) {
@@ -1164,10 +1149,15 @@ function renderTopCustomersTable(data) {
     `;
 }
 
-function renderRevenueBySupportRepTable(data) {
-    const rows = data.revenueBySupportRep;
-    const el = document.getElementById("revenueBySupportRepTable");
+function renderRevenueBySupportRepTable(canvasId, data) {
+    let rows;
+    if (canvasId === "customers_revenueBySupportRepTable") rows = data.revenueBySupportRep;
+    else if (canvasId === "employees_revenueBySupportRepTable") rows = data.supportRepPerformance;
+
+    const el = document.getElementById(canvasId);
     if (!el) return;
+
+
 
     if (!Array.isArray(rows) || rows.length === 0) {
         el.innerHTML = "<p style='color:#6b7280;margin:0'>No data</p>";
@@ -1376,7 +1366,220 @@ function renderCustomersByCountryTable(data) {
 
 // -------------------------------------RENDER EMPLOYEES-------------------------------------
 function renderEmployees(data) {
-    console.log(data);
-    const view = document.querySelector('.view[data-view="employees"]');
-    
+    renderEmployeesMetrics(data);
+
+    renderRevenueBySupportRepOverTime(data);
+    renderCustomersBySupportRep(data);
+    renderRevenueBySupportRepTable("employees_revenueBySupportRepTable", data)
+    renderSupportRepPerformanceTable(data);
+}
+
+function renderEmployeesMetrics(data) {
+    document.getElementById("totalEmployees").innerHTML = `${formatNumber(data.employeesMetrics.totalEmployees)}`;
+    document.getElementById("supportReps").innerHTML = `${formatNumber(data.employeesMetrics.totalSupportReps)}`;
+    document.getElementById("customersAssisted").innerHTML = `${formatNumber(data.employeesMetrics.totalClientsAssisted)}`;
+    document.getElementById("revenueManaged").innerHTML = `${formatCurrency(data.employeesMetrics.totalRevenueGenerated)}`;
+}
+
+function renderSupportRepPerformanceTable(data) {
+    const rows = data.supportRepPerformance;
+
+    const el = document.getElementById("supportRepPerformanceTable");
+    if (!el) return;
+
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        el.innerHTML = "<p style='color:#6b7280;margin:0'>No data</p>";
+        return;
+    }
+
+    const max = Math.max(...rows.map(r => Number(r.revenue) || 0)) || 1;
+
+    el.innerHTML = `
+        <table class="tableStyle">
+        <thead>
+            <tr>
+            <th class="rank-cell">Rank</th>
+            <th>Support Rep</th>
+            <th>Customers</th>
+            <th>Invoices</th>
+            <th class="number-cell" style="text-align:right">Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map((r, i) => {
+            const revenue = Number(r.revenue) || 0;
+            const pct = (revenue / max) * 100;
+
+            return `
+                <tr>
+                <td class="rank-cell">${i + 1}</td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.FirstName)}</span>
+                    <span class="table-subtitle">${escapeHtml(r.LastName)}</span>
+                </td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.totalCustomers)}</span>
+                </td>
+                <td>
+                    <span class="table-title">${escapeHtml(r.totalInvoices)}</span>
+                </td>
+                <td class="number-cell">
+                    <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end;">
+                    <div class="progress" style="flex:1; max-width:160px;">
+                        <div style="width:${pct.toFixed(1)}%"></div>
+                    </div>
+                    <div style="min-width:60px; text-align:right;">
+                        ${formatCurrency(revenue)}
+                    </div>
+                    </div>
+                </td>
+                </tr>
+            `;
+            }).join("")}
+        </tbody>
+        </table>
+    `;
+}
+
+function renderCustomersBySupportRep(data) {
+    if (graphLoadingState.customersBySupportRep) return;   
+
+    const N_SUPPORT_REPS = 3;
+    const supportReps = [];
+    const customersQuantityList = [];
+
+    data.supportRepPerformance.slice(0, N_SUPPORT_REPS).forEach(row => {
+        supportReps.push(row.FirstName + " " + row.LastName);
+        customersQuantityList.push(Number(row.totalCustomers) || 0);
+    });
+
+    graphLoadingState.customersBySupportRep = new Chart(
+        document.getElementById("customersBySupportRep"),
+        {
+        type: "doughnut",
+        data: {
+            labels: supportReps,
+            datasets: [{
+            data: customersQuantityList,
+            backgroundColor: generateColors(supportReps.length),
+            borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "65%",
+            plugins: {
+            legend: {
+                position: "right",
+                labels: {
+                boxWidth: 14,
+                padding: 20
+                }
+            },
+            tooltip: {
+                callbacks: {
+                label: (context) => {
+                    const value = Number(context.raw) || 0;
+                    const total = context.dataset.data.reduce((a, b) => a + Number(b || 0), 0);
+                    const percent = total ? ((value / total) * 100).toFixed(1) : "0.0";
+                    return `${context.label}: ${percent}%`;
+                }
+                }
+            }
+            }
+        }
+        }
+    );
+}
+
+function renderRevenueBySupportRepOverTime(data) {
+    if (graphLoadingState.revenueBySupportRepOverTime) return;
+
+    const rows = data?.revenueBySupportRepOverTime;
+    const { periods, supportReps, seriesBySupportRep } = buildRevenueSeriesBySupportRep(rows, { maxSupportReps: 3 });
+
+    if (!periods.length || !supportReps.length) {
+    console.warn("There is no data for revenueBySupportRepOverTime");
+    return;
+    }
+
+    const canvas = document.getElementById("revenueBySupportRepOverTime");
+    if (!canvas) return;
+
+    const colors = generateColors(supportReps.length);
+
+    const datasetsCharts = supportReps.map((g, i) => ({
+        label: g,
+        data: seriesBySupportRep[g] || [],
+        borderColor: colors[i],
+        backgroundColor: colors[i],
+        fill: false,
+        pointRadius: 0,
+        pointHoverRadius: 3,
+        pointHitRadius: 8,
+        borderWidth: 2,
+        tension: 0.25
+    }));
+
+    graphLoadingState.revenueBySupportRepOverTime = new Chart(canvas, {
+    type: "line",
+    data: {
+        labels: periods,
+        datasets: datasetsCharts
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+        mode: "index",
+        intersect: false
+        },
+        plugins: {
+        title: {
+            display: true,
+            text: "Revenue Over Time By Support Rep"
+        },
+        legend: {
+            display: true,
+            position: "top",
+            labels: {
+            boxWidth: 18
+            }
+        },
+        tooltip: {
+            callbacks: {
+            label: (context) => {
+                const label = context.dataset?.label || "";
+                return `${label}: ${formatCurrency(context.parsed.y)}`;
+            }
+            }
+        }
+        },
+        scales: {
+        x: {
+            ticks: {
+            maxTicksLimit: 6,
+            autoSkip: true
+            },
+            grid: {
+            display: false
+            }
+        },
+        y: {
+            beginAtZero: true,
+            ticks: {
+            callback: (v) => formatCurrency(v)
+            },
+            grid: {
+            color: "rgba(0,0,0,0.06)"
+            }
+        }
+        },
+        elements: {
+        point: { radius: 0 }
+        }
+    }
+    });
 }

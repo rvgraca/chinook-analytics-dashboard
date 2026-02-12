@@ -208,12 +208,6 @@
   font-size: 1.1rem;
 }
 
-.metric-card i{
-  color: #666;
-  font-size: 1.4rem;
-  margin: 0 0.3rem;
-}
-
 .metric-card h2 {
   margin: 0;
   font-size: 1.8rem;
@@ -238,14 +232,14 @@
   padding: 0.2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0,0,0,0.05);
-  
+  overflow: hidden;
   
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
-  overflow: hidden;
+  min-width: 0;
 }
 
 .chart-card h3 {
@@ -290,13 +284,18 @@
 }
 
 /*-----------------------------------------------------------------*/
-.divTablesStyle {
-  display: flex;
-  justify-content: center;
-
+.divTableStyle {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tableStyle {  
+  width: max-content;  
+  min-width: 100%;       
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -350,6 +349,16 @@
 
 /*-----------------------------------------------------------------*/
 
+#customersByCountryTable {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  min-width: 0;
+  display: block; /* importante: evita problemas con flex */
+  -webkit-overflow-scrolling: touch;
+}
+
+
 .view[data-view="geography"] .charts {
   display: block;
 }
@@ -384,7 +393,9 @@
 
   width: clamp(300px, 22vw, 360px);
   max-height: 38%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+
 
   padding: 10px 12px;
   background: rgba(255,255,255,0.9);
@@ -425,6 +436,7 @@
     cursor: default;
     touch-action: auto;
   }
+
 }
 
 
@@ -463,6 +475,7 @@
 
   .chart-card {
     padding: 0.5rem;
+    min-height: 350px;
   }
 }
 

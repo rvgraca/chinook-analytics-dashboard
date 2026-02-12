@@ -140,3 +140,47 @@ export function buildRevenueSeriesByGenre(rows, { maxGenres = 5 } = {}) {
 
   return { periods, genres, seriesByGenre, rowsUsed };
 }
+
+export function buildRevenueSeriesBySupportRep(rows, { maxSupportReps = 3 } = {}) {
+  if (!Array.isArray(rows)) { //this checks whether rows is an array. If not, returns a dictionary with empty arrays.
+    console.warn("revenueBySupportRepOverTime: rows no es array", rows);
+    return { periods: [], supportReps: [], seriesBySupportRep: {}, rowsUsed: 0 };
+  }
+
+  const clean = rows
+    .filter(r => r && typeof r.period === "string" && typeof r.FirstName === "string" && typeof r.LastName === "string")
+    .map(r => ({
+      period: r.period,                         // 'YYYY-MM'
+      supportRep: r.FirstName + " " + r.LastName,
+      revenue: Number(r.revenue) || 0,
+    }));
+    
+
+  if (clean.length === 0) {
+    return { periods: [], supportReps: [], seriesBySupportRep: {}, rowsUsed: 0 }; 
+  }
+
+  const periods = Array.from(new Set(clean.map(r => r.period))).sort();
+
+  const supportRepsAll = Array.from(new Set(clean.map(r => r.supportRep))); 
+
+  const supportReps = supportRepsAll.slice(0, maxSupportReps);
+  
+  const periodIndex = new Map(periods.map((p, i) => [p, i]));
+  
+  const seriesBySupportRep = Object.fromEntries(
+    supportReps.map(g => [g, Array(periods.length).fill(0)])
+  );
+  let rowsUsed = 0;
+  for (const r of clean) {
+    if (!seriesBySupportRep[r.supportRep]) continue; 
+    const i = periodIndex.get(r.period); 
+    if (i == null) continue; 
+
+    seriesBySupportRep[r.supportRep][i] += r.revenue; 
+    
+    rowsUsed++;
+  }
+
+  return { periods, supportReps, seriesBySupportRep, rowsUsed };
+}
