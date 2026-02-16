@@ -120,7 +120,4 @@ Base path: `/api/analytics`
 - The project serves static frontend assets from `public/`.
 - SQL logic is centralized in `routes/analytics.js`.
 - Chart rendering and UI interactions are implemented in `public/js/main.js`.
-
 ---
-
-If you want, this README can be extended with screenshots, architecture diagrams, or deployment instructions.
