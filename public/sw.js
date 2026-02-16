@@ -5,7 +5,7 @@
  * Chinook PWA Service Worker (strict + production-ready baseline)
  * - Update APP_VERSION on each deploy to force fresh app shell.
  */
-const APP_VERSION = "v1.0.2";
+const APP_VERSION = "v1.0.3";
 
 const CACHE = {
   SHELL: `shell-${APP_VERSION}`,
@@ -30,13 +30,11 @@ const APP_SHELL_FILES = [
 
   // CSS
   "/css/main.css",
-  "/css/components/button.css",
   "/styles/globals.css",
 
   // JS
   "/js/main.js",
   "/js/modules/utils.js",
-  "/js/modules/dom.js",
 
   // Icons
   "/assets/icons/pie-chart-192.png",
