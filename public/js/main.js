@@ -167,6 +167,8 @@ const graphLoadingState = {
     //employees
     customersBySupportRep: null,
     revenueBySupportRepOverTime: null,
+    //geography
+    customersByCountryMap: null,
 };
 
 
