@@ -122,5 +122,3 @@ Base path: `/api/analytics`
 - Chart rendering and UI interactions are implemented in `public/js/main.js`.
 
 ---
-
-If you want, this README can be extended with screenshots, architecture diagrams, or deployment instructions.
