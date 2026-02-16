@@ -21,6 +21,8 @@
     },
     "homepage": "https://github.com/rvgraca/chinook-analytics-dashboard#readme",
     "dependencies": {
+        "chart.js": "^4.5.1",
+        "chartjs-chart-geo": "^4.3.6",
         "ejs": "^3.1.10",
         "express": "^5.2.1",
         "sqlite": "^5.1.1",

@@ -1,128 +1,94 @@
 import {formatCurrency, formatNumber, generateColors, downsample, getLastYearData, escapeHtml, buildRevenueSeriesByGenre, buildRevenueSeriesBySupportRep} from './modules/utils.js'
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js");
+
+      // Si hay un SW nuevo esperando, lo activamos
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: "SKIP_WAITING" });
+      }
+
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            // nueva versión lista
+            newWorker.postMessage({ type: "SKIP_WAITING" });
+          }
+        });
+      });
+
+      // cuando cambie el controller, recargar una vez
+      let refreshed = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshed) return;
+        refreshed = true;
+        window.location.reload();
+      });
+    } catch (err) {
+      console.error("SW register error:", err);
+    }
+  });
+}
+
+
+
 const menuBtn = document.querySelector(".menu-btn");
 const sideBar = document.querySelector(".sidebar");
 const iconOpen = document.querySelector(".icon-open");
 const backdrop = document.querySelector(".backdrop");
 
+const DESKTOP_BP = 901; // mismo valor que tu CSS (ej: @media (max-width: 900px))
+const mqlDesktop = window.matchMedia(`(min-width: ${DESKTOP_BP}px)`);
+
 menuBtn.addEventListener("click", toggleMenu);
+backdrop.addEventListener("click", closeMenu);
+
+// ---------- estado explícito ----------
+function openMenu() {
+  sideBar.classList.add("show-menu");
+  iconOpen.style.display = "none";
+  backdrop.hidden = false;
+  menuBtn.setAttribute("aria-expanded", "true");
+  document.body.classList.add("no-scroll"); // opcional (bloquear scroll en mobile)
+}
+
+function closeMenu() {
+  sideBar.classList.remove("show-menu");
+  iconOpen.style.display = "inline-block";
+  backdrop.hidden = true;
+  menuBtn.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("no-scroll");
+}
 
 function toggleMenu() {
-    sideBar.classList.toggle("show-menu");
-
-    const open = sideBar.classList.contains("show-menu");
-    iconOpen.style.display = open ? "none" : "inline-block";
-    backdrop.hidden = !backdrop.hidden;
-    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (sideBar.classList.contains("show-menu")) closeMenu();
+  else openMenu();
 }
 
-backdrop.addEventListener("click", () => {
-  if (sideBar.classList.contains("show-menu")) toggleMenu();
-}); 
-
-
-function makeOverlayDraggable({
-  overlaySelector = ".geo-overlay-table",
-  containerSelector = ".geo-map-card",
-} = {}) {
-  const overlay = document.querySelector(overlaySelector);
-  const container = document.querySelector(containerSelector);
-
-  if (!overlay || !container) return;
-
-  
-  if (overlay.dataset.dragBound === "1") return;
-  overlay.dataset.dragBound = "1";
-
-  let dragging = false;
-  let pointerId = null;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  const clamp = (val, min, max) => Math.max(min, Math.min(val, max));
-
-
-  function normalizePositionToTopLeft() {
-    const c = container.getBoundingClientRect();
-    const o = overlay.getBoundingClientRect();
-
-    const left = o.left - c.left;
-    const top = o.top - c.top;
-
-    overlay.style.left = `${left}px`;
-    overlay.style.top = `${top}px`;
-    overlay.style.right = "auto";
-    overlay.style.bottom = "auto";
+// ---------- sincronización con resize ----------
+function syncMenuWithViewport() {
+  // si estamos en desktop, el drawer móvil debe quedar cerrado sí o sí
+  if (mqlDesktop.matches) {
+    closeMenu();
   }
-
-  function getClampedPosition(rawLeft, rawTop) {
-    const maxLeft = Math.max(0, container.clientWidth - overlay.offsetWidth);
-    const maxTop = Math.max(0, container.clientHeight - overlay.offsetHeight);
-
-    return {
-      left: clamp(rawLeft, 0, maxLeft),
-      top: clamp(rawTop, 0, maxTop),
-    };
-  }
-
-  function onPointerDown(e) {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    const interactive = e.target.closest("input, textarea, select, button, a");
-    if (interactive) return;
-
-    normalizePositionToTopLeft();
-
-    const o = overlay.getBoundingClientRect();
-    offsetX = e.clientX - o.left;
-    offsetY = e.clientY - o.top;
-
-    dragging = true;
-    pointerId = e.pointerId;
-    overlay.classList.add("dragging");
-    overlay.setPointerCapture(pointerId);
-
-    e.preventDefault();
-  }
-
-  function onPointerMove(e) {
-    if (!dragging || e.pointerId !== pointerId) return;
-
-    const c = container.getBoundingClientRect();
-    const rawLeft = e.clientX - c.left - offsetX;
-    const rawTop = e.clientY - c.top - offsetY;
-
-    const { left, top } = getClampedPosition(rawLeft, rawTop);
-    overlay.style.left = `${left}px`;
-    overlay.style.top = `${top}px`;
-  }
-
-  function stopDrag(e) {
-    if (!dragging || e.pointerId !== pointerId) return;
-
-    dragging = false;
-    overlay.classList.remove("dragging");
-    try { overlay.releasePointerCapture(pointerId); } catch {}
-    pointerId = null;
-  }
-
-  overlay.addEventListener("pointerdown", onPointerDown);
-  overlay.addEventListener("pointermove", onPointerMove);
-  overlay.addEventListener("pointerup", stopDrag);
-  overlay.addEventListener("pointercancel", stopDrag);
-
-  const onResize = () => {
-    const left = parseFloat(overlay.style.left || "0");
-    const top = parseFloat(overlay.style.top || "0");
-    const p = getClampedPosition(left, top);
-    overlay.style.left = `${p.left}px`;
-    overlay.style.top = `${p.top}px`;
-  };
-
-  window.addEventListener("resize", onResize);
-
-  normalizePositionToTopLeft();
-  onResize();
 }
+
+// al cargar
+syncMenuWithViewport();
+
+// cuando cambia el media query
+if (mqlDesktop.addEventListener) {
+  mqlDesktop.addEventListener("change", syncMenuWithViewport);
+} else {
+  // fallback navegadores viejos
+  mqlDesktop.addListener(syncMenuWithViewport);
+}
+
+
 
 
 
@@ -1244,7 +1210,7 @@ async function renderCustomersByCountryGraph(data) {
   };
 
   // topojson con más detalle
-  const world = await fetch("https://unpkg.com/world-atlas@2/countries-50m.json")
+  const world = await fetch("assets/maps/countries-50m.json")
     .then((r) => r.json());
 
   const countries = ChartGeo.topojson.feature(world, world.objects.countries).features;

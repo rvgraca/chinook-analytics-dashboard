@@ -34,10 +34,16 @@
     <link rel="stylesheet" href="/styles/globals.css" />
     <link rel="stylesheet" href="/css/main.css" />
 
-    <link rel="icon" type="image/x-icon" href="./assets/icons/pie-chart.png">
+    <link rel="icon" type="image/x-icon" href="./assets/icons/pie-chart-512.png">
 
     <!--FONT AWESOME-->
     <link rel="stylesheet" href="/assets/fontawesome/fontawesome-free-7.1.0-web/css/all.min.css">
+    
+    <!--PWA META TAGS-->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes" /> DEPRECATED -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
 
 </head>
@@ -45,7 +51,7 @@
         <div class="app">
             <header class="header">
                 <div class="title">
-                    <img class="pie-chart" src="./assets/icons/pie-chart.png" alt="pie-chart">
+                    <img class="pie-chart" src="./assets/icons/pie-chart-512.png" alt="pie-chart">
                     <h1 id="chinookTitle">Chinook Analytics Dashboard</h1>
                     <h1 id="mobileChinookTitle">Chinook</h1>
                 </div>
@@ -318,8 +324,8 @@
         </div>
 
         <!-- CHART JS v4 -->
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4"></script>
+        <script src="assets/vendor/chart/chart.umd.min.js"></script>
+        <script src="assets/vendor/chart/chartjs-chart-geo.umd.min.js"></script>
 
         <!-- MAIN JS -->
         <script type="module" src="./js/main.js"></script>
